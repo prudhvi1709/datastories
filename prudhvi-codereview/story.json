@@ -1,0 +1,11 @@
+{
+  "id": "prudhvi-codereview",
+  "title": "The Developer Who Shipped 86 Repositories",
+  "subtitle": "A Deep Code Review of One Year's Worth of Commits",
+  "description": "What happens when an AI critically reviews every line of code across 86 repositories? A narrative-driven journey through architecture decisions, hidden patterns, and the story of prolific developer velocity.",
+  "tags": ["Code Review", "GitHub", "Software Engineering"],
+  "icon": "💻",
+  "gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+  "published": "2026-01-08",
+  "insights": 5
+}

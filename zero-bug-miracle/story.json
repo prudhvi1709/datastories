@@ -1,0 +1,11 @@
+{
+  "id": "zero-bug-miracle",
+  "title": "The Zero-Bug Miracle",
+  "subtitle": "Building Source-to-Settle in One Day",
+  "description": "How one developer and Claude Code built a production-grade AI procurement system with 172 files, 1,500 lines of code, and zero bugs—in a single day. A real-time chronicle of human-AI collaboration at its finest.",
+  "tags": ["AI Collaboration", "Development", "Case Study"],
+  "icon": "⚡",
+  "gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+  "published": "2026-01-07",
+  "insights": 4
+}

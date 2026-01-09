@@ -1,0 +1,13 @@
+{
+  "id": "your-story-folder-name",
+  "title": "Your Story Title",
+  "subtitle": "An engaging subtitle that draws readers in",
+  "description": "A compelling 1-2 sentence description that makes people want to read your story. What insights will they discover? What questions will be answered?",
+  "tags": ["Tag1", "Tag2", "Tag3"],
+  "icon": "📊",
+  "gradient": "linear-gradient(135deg, #8d4bff 0%, #ff006b 100%)",
+  "published": "2026-01-09",
+  "difficulty": "Optional difficulty rating",
+  "responseLength": "Optional length metric",
+  "insights": 3
+}

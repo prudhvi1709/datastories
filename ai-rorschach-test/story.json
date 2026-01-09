@@ -1,0 +1,13 @@
+{
+  "id": "ai-rorschach-test",
+  "title": "The Rorschach Test",
+  "subtitle": "What Three AIs Saw in the Same Question",
+  "description": "An experiment comparing how ChatGPT, Gemini, and Claude Code interpret and respond to the exact same technical question, revealing their distinct personalities and cognitive architectures.",
+  "tags": ["AI", "Analysis", "Comparison"],
+  "difficulty": "8.5/10",
+  "responseLength": "6,481 lines",
+  "insights": 3,
+  "icon": "🔬",
+  "gradient": "linear-gradient(135deg, #8d4bff 0%, #ff006b 50%, #00d9ff 100%)",
+  "published": "2026-01-09"
+}
