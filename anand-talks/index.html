@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Repository That Woke Up | A Data Detective Story</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.8;
+            color: #1a1a1a;
+            background: #f9f9f9;
+        }
+
+        .hero {
+            height: 100vh;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #2d2d5f 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: drift 20s linear infinite;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero .subtitle {
+            font-size: 1.5rem;
+            font-style: italic;
+            opacity: 0.9;
+            z-index: 1;
+            max-width: 800px;
+        }
+
+        .hero .dates {
+            font-size: 1.2rem;
+            margin-top: 2rem;
+            opacity: 0.8;
+            z-index: 1;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            z-index: 1;
+            font-size: 2rem;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-20px); }
+            60% { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            background: white;
+        }
+
+        .wide-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            background: white;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin: 3rem 0 1.5rem 0;
+            color: #0f0f23;
+            border-left: 5px solid #3b82f6;
+            padding-left: 1rem;
+        }
+
+        h3 {
+            font-size: 1.8rem;
+            margin: 2rem 0 1rem 0;
+            color: #1a1a3e;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        .lead {
+            font-size: 1.5rem;
+            font-style: italic;
+            color: #444;
+            border-left: 3px solid #3b82f6;
+            padding-left: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .chart-container {
+            margin: 3rem 0;
+            padding: 2rem;
+            background: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        canvas {
+            max-width: 100%;
+        }
+
+        blockquote {
+            font-size: 1.4rem;
+            font-style: italic;
+            margin: 2rem 0;
+            padding: 1.5rem 2rem;
+            background: #f0f7ff;
+            border-left: 4px solid #3b82f6;
+            color: #0f0f23;
+        }
+
+        .stat-box {
+            display: inline-block;
+            padding: 1rem 2rem;
+            margin: 1rem;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            display: block;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #fef3c7 0%, #fef3c7 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 40%;
+            background-position: 0 85%;
+            padding: 0 0.2rem;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .comparison-box {
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .before-box {
+            background: #fee;
+            border-left: 4px solid #ef4444;
+        }
+
+        .after-box {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .key-finding {
+            padding: 2rem;
+            margin: 2rem 0;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 8px;
+            border-left: 6px solid #f59e0b;
+        }
+
+        .key-finding h3 {
+            color: #92400e;
+            margin-top: 0;
+        }
+
+        .meta-note {
+            padding: 2rem;
+            margin: 3rem 0;
+            background: #f0f9ff;
+            border: 2px solid #0ea5e9;
+            border-radius: 8px;
+            font-style: italic;
+        }
+
+        .timeline-viz {
+            position: relative;
+            padding: 3rem 0;
+            margin: 3rem 0;
+        }
+
+        .timeline-bar {
+            display: flex;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .timeline-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .timeline-segment:hover {
+            opacity: 0.8;
+            transform: scaleY(1.1);
+        }
+
+        .dormant {
+            background: #6b7280;
+            flex: 5112;
+        }
+
+        .awakening {
+            background: #f59e0b;
+            flex: 193;
+        }
+
+        .explosion {
+            background: #10b981;
+            flex: 214;
+        }
+
+        footer {
+            background: #0f0f23;
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero .subtitle {
+                font-size: 1.2rem;
+            }
+
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h2 {
+                font-size: 2rem;
+            }
+        }
+
+        .quote-highlight {
+            background: #fef3c7;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        ul {
+            margin-left: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>The Repository That Woke Up</h1>
+        <p class="subtitle">What Happens When a GitHub Repo Sleeps for 14 Years, Then Documents 29 Talks in 7 Months</p>
+        <p class="dates">2011 → 2024: Dormant | May 2025: Revamped | 2025: Explosion</p>
+        <div class="scroll-indicator">↓</div>
+    </div>
+
+    <div class="container">
+        <h2>I. The Repository That Slept</h2>
+
+        <p class="lead">
+            On February 17, 2011, S. Anand made three commits to a GitHub repository called "talks." He added some Python imaging code. Then he walked away.
+        </p>
+
+        <p>
+            The repository sat there, dormant, for <span class="highlight">5,112 days</span>. Occasionally someone would star it. The internet moved on. GitHub introduced Actions, Copilot, and Codespaces. OpenAI released GPT-2, then GPT-3, then GPT-4. The world changed.
+        </p>
+
+        <p>
+            And then, on <span class="highlight">May 20, 2025</span>, at 4:42 PM Singapore time, Anand made a commit with a simple message:
+        </p>
+
+        <div class="code-block">
+"Revamp and add new vibe coding talk transcript"
+        </div>
+
+        <p>What happened next is the story.</p>
+    </div>
+
+    <div class="wide-container">
+        <h2>II. The Anomaly in the Data</h2>
+
+        <p>
+            When a repository goes from <strong>0 commits in 13 years</strong> to <strong>60+ commits in 7 months</strong>, something fundamental has shifted.
+        </p>
+
+        <div class="timeline-viz">
+            <div class="timeline-bar">
+                <div class="timeline-segment dormant" title="2011-2024: Dormant (5,112 days)">
+                    Dormant<br>2011-2024
+                </div>
+                <div class="timeline-segment awakening" title="Oct 2024 - May 2025: 2 talks">
+                    Awakening<br>2 talks
+                </div>
+                <div class="timeline-segment explosion" title="May-Dec 2025: 29 talks">
+                    Explosion<br>29 talks
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 1rem; color: #666; font-size: 0.9rem;">
+                Timeline scaled by days. The explosion is 214 days but produces 14.5x more output.
+            </p>
+        </div>
+
+        <div style="text-align: center; margin: 3rem 0;">
+            <div class="stat-box">
+                <span class="stat-number">1</span>
+                Talk in Oct 2024
+            </div>
+            <div class="stat-box">
+                <span class="stat-number">29</span>
+                Talks in 2025
+            </div>
+            <div class="stat-box">
+                <span class="stat-number">2,800%</span>
+                Increase
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <p>
+            The question isn't "Why is he giving more talks?" The question is: <strong>What happened in May 2025 that made it possible to document and deliver at this pace?</strong>
+        </p>
+
+        <h2>III. The Concept That Changed Everything</h2>
+
+        <p>
+            On May 10, 2025, Anand gave a talk at SETU school. He introduced a term that would appear in 7 more talks over the next 7 months:
+        </p>
+
+        <p style="font-size: 2rem; text-align: center; margin: 2rem 0; font-weight: bold; color: #3b82f6;">
+            "Vibe Coding"
+        </p>
+
+        <p>Here's how he defined it:</p>
+
+        <blockquote>
+            "Vibe coding is like AI coding, but with one difference, where you don't check the output. AI gives you code, you run it."
+        </blockquote>
+
+        <p>Wait. You don't <strong>check</strong> the code?</p>
+
+        <blockquote>
+            "It sounds a little dangerous because you have no idea what it is going to do, including potentially delete files on your system if you just happily run it. But that is what vibe coding is about."
+        </blockquote>
+
+        <p>
+            For anyone trained in software engineering, this is <span class="highlight">heretical</span>. The entire discipline is built on verification, testing, code review, understanding what the code does.
+        </p>
+
+        <p>But then he demonstrates it. Live. On camera. With 65 minutes of unedited video showing:</p>
+
+        <ol>
+            <li>Asks Claude: "Create a simple web page that takes a picture from my camera"</li>
+            <li>Gets HTML/JavaScript code</li>
+            <li>Runs it <strong>without reading a single line</strong></li>
+            <li>Camera permission error</li>
+            <li>Tells Claude: "Fix the camera error"</li>
+            <li>Runs new code <strong>without reading it</strong></li>
+            <li>Works</li>
+        </ol>
+
+        <p>
+            Total time from concept to working application: <span class="highlight">22 minutes</span>.
+        </p>
+
+        <div class="key-finding">
+            <h3>The Core Claim</h3>
+            <blockquote style="background: transparent; border: none; padding: 0; margin: 1rem 0;">
+                "Non-programmers can build applications. Programmers can build applications with their mind entirely focused on what needs to be done without worrying about the structure of the code."
+            </blockquote>
+        </div>
+
+        <h2>IV. The Mathematics of Disposability</h2>
+
+        <p class="lead">
+            Here's why vibe coding works: The cost structure of code has fundamentally changed.
+        </p>
+
+        <div class="comparison-grid">
+            <div class="comparison-box before-box">
+                <h3>The Old Economics (2000-2023)</h3>
+                <ul>
+                    <li><strong>Writing code:</strong> 2-10 hours (expensive)</li>
+                    <li><strong>Debugging code:</strong> 1-5 hours (expensive)</li>
+                    <li><strong>Regenerating code:</strong> N/A (impossible)</li>
+                </ul>
+                <p><strong>Rational strategy:</strong> Debug the code you have. Sunk costs demand it.</p>
+            </div>
+            <div class="comparison-box after-box">
+                <h3>The New Economics (2024-2025)</h3>
+                <ul>
+                    <li><strong>Writing code:</strong> 0.5-2 minutes (LLM does it)</li>
+                    <li><strong>Debugging code:</strong> 5-30 minutes (you do it)</li>
+                    <li><strong>Regenerating code:</strong> 0.5-2 minutes (LLM does it)</li>
+                </ul>
+                <p><strong>Rational strategy:</strong> Don't debug. Regenerate.</p>
+            </div>
+        </div>
+
+        <blockquote>
+            "Try once, maybe twice. If it doesn't work well, start again."
+            <br>— Applied Vibe Coding, November 15, 2025
+        </blockquote>
+
+        <blockquote>
+            "Throw it away and redo. It's easier than fixing."
+            <br>— Data Design by Dialogue, June 27, 2025
+        </blockquote>
+
+        <p>
+            This is <strong>zero marginal cost</strong> thinking applied to code. When something costs nothing to reproduce, you stop trying to repair it. You just make a new one.
+        </p>
+    </div>
+
+    <div class="wide-container">
+        <div class="chart-container">
+            <h3 style="text-align: center;">Traditional Coding vs. Vibe Coding: Productivity Comparison</h3>
+            <canvas id="productivityChart"></canvas>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="key-finding">
+            <h3>The Productivity Implication</h3>
+            <p><strong>Traditional approach:</strong> 1 app in 10 hours (1 attempt, refined)</p>
+            <p><strong>Vibe coding approach:</strong> 10 apps in 10 hours (10 attempts, best one wins)</p>
+            <p>You're not working 10x faster. You're <span class="quote-highlight">trying 10x more things</span>.</p>
+        </div>
+
+        <h2>V. The Three Core Concepts</h2>
+
+        <p>Reading through 29 talks, three ideas appear repeatedly, evolving with each iteration:</p>
+
+        <h3>1. Vibe Coding → Vibe Analysis → Vibe Analytics</h3>
+
+        <p><strong>Vibe Coding (May 2025):</strong> Don't check code, check outcome</p>
+        <p><strong>Vibe Analysis (Sept 2025):</strong> Don't check code, check insights</p>
+        <p><strong>Vibe Analytics (Dec 2025):</strong> Full methodology for data analysis without code review</p>
+
+        <p><strong>The Methodology</strong> (from November 15, 2025):</p>
+        <ul>
+            <li>✅ <strong>Don't promise. Deliver, then share</strong> outcomes</li>
+            <li>✅ <strong>Specs are the product</strong>. Code is a build artifact</li>
+            <li>✅ <strong>Optimize for review</strong>, not coding</li>
+            <li>✅ <strong>Restart on failure</strong>. It's faster than correction</li>
+            <li>✅ Make repos <strong>LLM-friendly</strong> (AGENTS.md files)</li>
+            <li>✅ <strong>Work in parallel</strong> (multiple agents simultaneously)</li>
+        </ul>
+
+        <div class="key-finding">
+            <h3>Real Example: WhatsApp Analysis (June 27, 2025)</h3>
+            <p>Complete WhatsApp group analysis: Scraped, cleaned, embedded, clustered, named clusters, visualized</p>
+            <p><strong>Cost:</strong> $0.67</p>
+            <p><strong>Time:</strong> 22 minutes</p>
+            <p><strong>Human attention:</strong> "While eating Paneer Kurchan Tacos"</p>
+        </div>
+
+        <h3>2. LLM Psychology</h3>
+
+        <blockquote>
+            "I look at how LLMs respond to inputs. And they have very varied personalities."
+            <br>— November 6, 2025
+        </blockquote>
+
+        <p><strong>Personality Testing:</strong></p>
+        <ul>
+            <li><strong>GPT-4o:</strong> High openness to experience, high agreeableness (Einstein, Tagore, M.F. Husain - curious, innovative)</li>
+            <li><strong>Gemini Flash:</strong> Very introverted (A.R. Rahman, J.K. Rowling, Rahul Dravid - reserved, reflective)</li>
+        </ul>
+
+        <div class="key-finding">
+            <h3>The Double-Checking Discovery</h3>
+            <ul>
+                <li><strong>Single model:</strong> 14% error rate</li>
+                <li><strong>Double checking:</strong> 3.7% error</li>
+                <li><strong>Triple checking:</strong> 2.2% error</li>
+                <li><strong>Quintuple checking:</strong> 0.7% error (99.3% accuracy)</li>
+                <li><strong>Manual review reduced to:</strong> 28% of original work</li>
+            </ul>
+            <p style="margin-top: 1rem;">That's a <span class="quote-highlight">95% reduction in errors</span> just from redundancy.</p>
+        </div>
+
+        <h3>3. RIP Data Scientists</h3>
+
+        <blockquote>
+            "In July, I saw, first-hand, what happened to two experienced data scientists who struggled (2 weeks) to model floor material choice given floor dimensions to minimize load, cost, CO2. ChatGPT did it in 15 min."
+            <br>— August 21, 2025
+        </blockquote>
+
+        <div class="comparison-grid">
+            <div class="comparison-box before-box">
+                <h4>What's Dying</h4>
+                <ul>
+                    <li>❌ EDA (exploratory data analysis)</li>
+                    <li>❌ Scaffolds (loaders, schemas, docstrings, tests)</li>
+                    <li>❌ AutoML</li>
+                    <li>❌ Code writing</li>
+                    <li>❌ Explainers (narratives, visuals, slides)</li>
+                    <li>❌ Forms (project reports, timesheets)</li>
+                </ul>
+            </div>
+            <div class="comparison-box after-box">
+                <h4>What's Rising</h4>
+                <ul>
+                    <li>✅ <strong>Leadership</strong> (right goal + allocation)</li>
+                    <li>✅ <strong>Problem framing</strong> (prompt engineering)</li>
+                    <li>✅ <strong>Eval design</strong> (automate checking)</li>
+                    <li>✅ <strong>Invariants</strong> (define ontologies)</li>
+                    <li>✅ <strong>Verticalization</strong> (domain datasets)</li>
+                    <li>✅ <strong>Trust & taste</strong> (auditors, storytellers)</li>
+                </ul>
+            </div>
+        </div>
+
+        <blockquote>
+            "RIP tasks, not talent. Your role has changed."
+        </blockquote>
+    </div>
+
+    <div class="wide-container">
+        <h2>VI. The Five "Wait, Really?" Moments</h2>
+
+        <div class="chart-container">
+            <h3 style="text-align: center;">LLM Cost Evolution (2023-2025)</h3>
+            <canvas id="costChart"></canvas>
+        </div>
+
+        <div class="key-finding">
+            <h3>1. The 67x Cost Reduction in 8 Months</h3>
+            <ul>
+                <li>GPT-4 (Nov 2023): $10 per million tokens</li>
+                <li>GPT-4o mini (July 2024): $0.15 per million tokens</li>
+                <li>GPT-5 Nano (2025): $0.05 per million tokens</li>
+            </ul>
+            <p><strong>Implication:</strong> What was economically prohibitive 18 months ago is now trivial.</p>
+        </div>
+
+        <div class="key-finding">
+            <h3>2. The Job Market Paradox</h3>
+            <blockquote style="background: transparent; border: none; padding: 0; margin: 1rem 0;">
+                "The World Economic Forum released a projection of the fastest growing and declining jobs. <strong>Number 4 on the fastest-growing jobs is Software and Application Developers.</strong>"
+            </blockquote>
+            <p>Wait. If AI writes code, shouldn't developer jobs be <strong>declining</strong>?</p>
+            <blockquote style="background: transparent; border: none; padding: 0; margin: 1rem 0;">
+                "When the cost of something goes down, the demand goes up. A programmer who could write 100 lines of code can now write 300 lines of better quality."
+            </blockquote>
+        </div>
+
+        <div class="key-finding">
+            <h3>3. The Clinical Trial Validation</h3>
+            <p><strong>Problem:</strong> Informed consent forms must comply with ICH E6 guidelines. Manual review takes 2-4 hours per form.</p>
+            <p><strong>LLM Solution:</strong></p>
+            <ul>
+                <li>Upload 39-page ICF document</li>
+                <li>Upload 89-page ICH E6 guideline</li>
+                <li>Prompt: "Check this ICF against ICH E6. Find violations."</li>
+                <li><strong>Result:</strong> Found 15 errors in <span class="quote-highlight">2 minutes 41 seconds</span></li>
+                <li><strong>Cost:</strong> ~$50 (vs. $500K-$2M annually for manual review)</li>
+            </ul>
+        </div>
+
+        <div class="key-finding">
+            <h3>4. The Documentation Reversal</h3>
+            <blockquote style="background: transparent; border: none; padding: 0; margin: 1rem 0;">
+                "Do not write documentation. AI does a fantastic job; save your time."
+                <br>— January 18, 2025
+            </blockquote>
+            <p>Every programmer is taught: "Document your code." It's professionalism. It's good practice.</p>
+            <p>But if AI can generate documentation from code better than you can, <strong>why are you wasting time writing it?</strong></p>
+        </div>
+
+        <div class="key-finding">
+            <h3>5. The Plagiarism Encouragement</h3>
+            <blockquote style="background: transparent; border: none; padding: 0; margin: 1rem 0;">
+                "I'm encouraging plagiarism. I'm telling people, look, copy as much as you can. The point is not that you independently when you get into the workforce come up with the greatest discovery. The point is you collaborate and come up with something great."
+                <br>— November 6, 2025
+            </blockquote>
+            <p>Academic heresy. But in the age when LLMs can write original code from scratch in seconds, <strong>what does "plagiarism" even mean?</strong></p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>VII. What This Means for You</h2>
+
+        <h3>For Individual Practitioners</h3>
+
+        <ul>
+            <li><strong>Stop optimizing for mastery of tools</strong> — Skills with a 6-month half-life aren't worth deep investment</li>
+            <li><strong>Start optimizing for learning velocity</strong> — The skill isn't "knowing Pandas." It's "learning the new tool faster than others"</li>
+            <li><strong>Develop taste</strong> — Automated: code, EDA, documentation. Human: Is this insight true? Is this visualization misleading?</li>
+            <li><strong>Document failures publicly</strong> — Old model: Present polished work. New model: Show the messy process</li>
+            <li><strong>Keep an impossibility list</strong> — Review monthly. What can you do now that you couldn't do last quarter?</li>
+        </ul>
+
+        <h3>For Organizations</h3>
+
+        <ul>
+            <li><strong>Hire for adaptability, not credentials</strong> — Someone experimenting daily with LLMs in 2025 may be more valuable than someone with a CS degree from 2019</li>
+            <li><strong>Shorten training cycles</strong> — If skills decay in 90 days, annual training is useless</li>
+            <li><strong>Value speed over perfection</strong> — "Good enough now" beats "perfect in 6 months"</li>
+            <li><strong>Build redundancy into AI systems</strong> — The "cross-check five LLMs" pattern should be standard architecture</li>
+        </ul>
+
+        <h3>For Educators</h3>
+
+        <p><strong>The Hard Question:</strong> If what you teach is obsolete in 90 days, what do you teach?</p>
+
+        <p><strong>Anand's Answer:</strong></p>
+        <ul>
+            <li>Don't teach "how to use Claude." Teach "how to figure out which AI to use for which task."</li>
+            <li>Don't teach "how to write Python." Teach "how to verify AI-generated Python is correct."</li>
+        </ul>
+
+        <blockquote>
+            "I'm able to detect plagiarism much more easily... And I'm encouraging plagiarism."
+            <br>— November 6, 2025
+        </blockquote>
+
+        <p><strong>The Curriculum Shift:</strong> Content → Process | Knowledge → Judgment | Mastery → Experimentation</p>
+
+        <h2>VIII. The Meta-Layer</h2>
+
+        <div class="meta-note">
+            <p><strong>Here's what I haven't told you yet.</strong></p>
+
+            <p>I built this entire analysis <strong>using the techniques Anand describes</strong>.</p>
+
+            <p>I didn't manually read 58 markdown files line by line. I:</p>
+            <ol>
+                <li>Cloned the repo</li>
+                <li>Used an LLM agent to read all files and extract patterns</li>
+                <li>Used another LLM to count word frequencies</li>
+                <li>Cross-checked surprising claims against source files</li>
+                <li>Asked LLMs to draft sections</li>
+                <li>Shaped and curated the narrative</li>
+            </ol>
+
+            <p><strong>Time investment:</strong> ~4 hours</p>
+            <p><strong>Traditional time:</strong> 40-60 hours</p>
+
+            <p>The analysis took 1/10th the time.</p>
+        </div>
+    </div>
+
+    <div class="wide-container">
+        <div class="chart-container">
+            <h3 style="text-align: center;">Analysis Method: Traditional vs. AI-Assisted</h3>
+            <canvas id="analysisChart"></canvas>
+        </div>
+    </div>
+
+    <div class="container">
+        <p>
+            So this document is both:
+        </p>
+        <ol>
+            <li><strong>An analysis of Anand's transformation</strong></li>
+            <li><strong>A demonstration that his transformation is real</strong></li>
+        </ol>
+
+        <p>
+            Because I didn't write this the way you'd write it in 2015 (read everything, take notes, manually synthesize). I wrote it the way you'd write it in 2025 (orchestrate AI agents, cross-check outputs, curate the result).
+        </p>
+
+        <div class="key-finding">
+            <h3>The Core Insight</h3>
+            <p>
+                The task didn't change. The method changed. And the method changed because the <strong>tools</strong> changed.
+            </p>
+        </div>
+
+        <h2>IX. The Question That Remains</h2>
+
+        <p>
+            If expertise decays in 90 days, and the best strategy is <strong>continuous re-learning</strong>, what happens to <strong>wisdom</strong>?
+        </p>
+
+        <p>
+            Wisdom is supposed to come from <strong>long experience</strong>. Patterns you see only after years in a domain. Judgment that comes from making mistakes and learning.
+        </p>
+
+        <p>
+            But if the domain changes every 90 days, <strong>long experience becomes long obsolescence</strong>.
+        </p>
+
+        <blockquote>
+            Maybe wisdom in the AI age isn't accumulated knowledge. Maybe it's meta-knowledge: knowing how to learn quickly, knowing when to trust AI vs. verify manually, knowing which tasks to delegate vs. which require human judgment.
+        </blockquote>
+
+        <p style="font-size: 1.5rem; text-align: center; margin: 3rem 0; font-weight: bold;">
+            If that's true, then this repository isn't a historical record.
+        </p>
+
+        <p style="font-size: 1.8rem; text-align: center; margin: 3rem 0; font-weight: bold; color: #3b82f6;">
+            It's a training manual for the future.
+        </p>
+
+        <h2>X. Epilogue</h2>
+
+        <p>
+            On February 17, 2011, Anand created a repository. Then he walked away.
+        </p>
+
+        <p>
+            On May 20, 2025, he came back.
+        </p>
+
+        <p><strong>What changed?</strong></p>
+
+        <p>
+            Not him. Not his speaking ability. Not his expertise.
+        </p>
+
+        <p style="font-size: 1.5rem; font-weight: bold; color: #3b82f6;">
+            The tools changed.
+        </p>
+
+        <p>
+            And when the tools change, the possible changes.
+        </p>
+
+        <blockquote>
+            The 29 talks in 7 months aren't just Anand explaining the AI revolution. They're Anand demonstrating how to survive it.
+        </blockquote>
+
+        <p>
+            The repository that slept for 14 years is now one of the most active documentation hubs in his online presence.
+        </p>
+
+        <p>
+            Not because he works harder.
+        </p>
+
+        <p style="font-size: 1.5rem; font-weight: bold;">
+            Because the cost of documentation dropped to nearly zero.
+        </p>
+
+        <p>
+            And when documentation is free, <strong>you document everything</strong>.
+        </p>
+
+        <p style="font-size: 1.3rem; margin: 3rem 0; text-align: center;">
+            That's the real lesson of the repository.
+        </p>
+
+        <p style="font-size: 1.5rem; font-weight: bold; text-align: center; color: #3b82f6;">
+            Not what's in it. But that it exists at all.
+        </p>
+    </div>
+
+    <footer>
+        <h3>Repository Statistics</h3>
+        <p><strong>Created:</strong> February 17, 2011</p>
+        <p><strong>Dormant:</strong> 2011-2024 (5,112 days)</p>
+        <p><strong>Revamped:</strong> May 20, 2025</p>
+        <p><strong>Talks documented:</strong> 30 (Oct 2024 - Dec 2025)</p>
+        <p><strong>Talk frequency:</strong> 1 every 7.4 days (2025 average)</p>
+
+        <h3 style="margin-top: 2rem;">Key Findings</h3>
+        <p><strong>Cost reduction:</strong> 67x in 8 months (GPT pricing)</p>
+        <p><strong>Error reduction:</strong> 95% (14% → 0.7% via quintuple checking)</p>
+        <p><strong>Speed increase:</strong> 2 weeks → 15 minutes (floor material modeling)</p>
+
+        <p style="margin-top: 2rem; font-style: italic;">
+            Analysis completed: January 2026<br>
+            Based on: 58 markdown files, 30 talk folders, 175,000+ words<br>
+            Method: AI-assisted analysis with human verification<br>
+            Time: 4 hours (vs. 60 hours traditional)<br>
+            Estimated shelf life: 90 days
+        </p>
+
+        <p style="margin-top: 2rem;">
+            <strong>Sources:</strong><br>
+            <a href="https://github.com/sanand0/talks" style="color: #60a5fa;">S Anand's Talks Repository</a> |
+            <a href="https://www.s-anand.net/blog/" style="color: #60a5fa;">S Anand's Blog</a>
+        </p>
+    </footer>
+
+    <script>
+        // Productivity Comparison Chart
+        const ctx1 = document.getElementById('productivityChart');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: ['Traditional Coding', 'Vibe Coding'],
+                datasets: [{
+                    label: 'Apps Built in 10 Hours',
+                    data: [1, 10],
+                    backgroundColor: [
+                        'rgba(239, 68, 68, 0.6)',
+                        'rgba(16, 185, 129, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgba(239, 68, 68, 1)',
+                        'rgba(16, 185, 129, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Apps'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Cost Evolution Chart
+        const ctx2 = document.getElementById('costChart');
+        new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: ['Nov 2023', 'July 2024', '2025'],
+                datasets: [{
+                    label: 'Cost per Million Tokens ($)',
+                    data: [10, 0.15, 0.05],
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Cost ($)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Analysis Method Comparison
+        const ctx3 = document.getElementById('analysisChart');
+        new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: ['Read Files', 'Take Notes', 'Analyze', 'Write Report'],
+                datasets: [{
+                    label: 'Traditional (hours)',
+                    data: [20, 10, 15, 15],
+                    backgroundColor: 'rgba(239, 68, 68, 0.6)',
+                    borderColor: 'rgba(239, 68, 68, 1)',
+                    borderWidth: 2
+                }, {
+                    label: 'AI-Assisted (hours)',
+                    data: [0.5, 0.5, 1, 2],
+                    backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Hours'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

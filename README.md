@@ -192,11 +192,7 @@ The main landing page features:
 
 ## 📝 License
 
-[Your chosen license]
-
-## 📬 Contact
-
-Have questions or feedback? [Contact information]
+[MIT License](LICENSE)
 
 ---
 

@@ -1,0 +1,10 @@
+{
+  "id": "repository-that-woke-up",
+  "title": "The Repository That Woke Up",
+  "subtitle": "What happens when a GitHub repo sleeps for 14 years, then documents 29 talks in 7 months",
+  "description": "A data detective story about S. Anand's transformation from dormant repository to productivity explosion.",
+  "tags": ["GitHub Analysis", "Data Detective"],
+  "icon": "💤",
+  "gradient": "linear-gradient(135deg, #0f0f23 0%, #3b82f6 50%, #10b981 100%)",
+  "published": "2026-01-09"
+}
