@@ -372,6 +372,29 @@
     transform: translateY(-3px);
   }
   section[id^="part-"], #the-test { scroll-margin-top: 28px; }
+  /* Author note */
+  .author-note {
+    background: rgba(212, 165, 116, 0.05);
+    border: 1px solid rgba(212, 165, 116, 0.18);
+    border-left: 2px solid var(--accent);
+    padding: 18px 22px;
+    border-radius: 4px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  .author-note-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .author-note p { margin: 0; font-style: italic; }
+  .author-note strong { color: var(--ink); font-weight: 600; font-style: normal; }
   .byline {
     font-family: 'Inter', sans-serif;
     font-size: 12px;
@@ -397,6 +420,14 @@
   <p class="subhead mt-8">How three AIs, one outdated rule book, and a four day deadline taught me what it means to use AI for a decision that actually mattered.</p>
   <div class="byline mt-12 pt-6 border-t rule">By Prudhvi Krovvidi · Published May 2026 · 12 min read</div>
 </header>
+
+<!-- AUTHOR NOTE -->
+<section class="container-tight pt-2 pb-4">
+  <div class="author-note">
+    <div class="author-note-label">A note before we begin</div>
+    <p>The <strong>"I"</strong> in this story is a <strong>composite protagonist</strong>, not a self portrait. The salary (₹13.5 lakh), the specific rupee figures, the four named personas later in the piece, and the closing submission are all synthetic, chosen to illustrate the cliff dynamic cleanly. What is real: the AI workflow, the three model iteration, the rule updates that landed on 1 April 2026 under Income Tax Rules 2026, the prompts, and the lessons. The numbers exist to carry the story. The method is the point.</p>
+  </div>
+</section>
 
 <!-- OPENING / HOOK -->
 <section class="container-tight py-10">
