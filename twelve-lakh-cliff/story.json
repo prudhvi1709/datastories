@@ -1,0 +1,12 @@
+{
+  "id": "twelve-lakh-cliff",
+  "title": "The ₹12 Lakh Cliff",
+  "subtitle": "How Three AIs Disagreed About a Tax Bill",
+  "description": "A Tuesday in May. One four day deadline. Three AIs giving three different answers, each confident, none complete. The story of how multi model cross validation became the new minimum for any decision involving rules that change.",
+  "tags": ["AI Workflow", "Personal Finance", "Indian Tax"],
+  "icon": "🪙",
+  "gradient": "linear-gradient(135deg, #d4a574 0%, #c97064 50%, #7fb685 100%)",
+  "published": "2026-05-15",
+  "responseLength": "12 min read",
+  "insights": 4
+}

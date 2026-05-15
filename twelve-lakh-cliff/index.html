@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The ₹12 Lakh Cliff</title>
+<meta name="description" content="A Tuesday in May. Three AIs. One outdated rule book. The story of how multi-model AI cross-validation became the new minimum for decisions that matter." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --ink: #ebe7df;
+    --ink-soft: #b8b3a8;
+    --ink-faint: #6e6a62;
+    --paper: #131210;
+    --paper-warm: #1a1814;
+    --rule: rgba(235, 231, 223, 0.08);
+    --accent: #d4a574;
+    --accent-bright: #f5c585;
+    --green: #7fb685;
+    --red: #c97064;
+    --blue: #6a96b8;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Lora', Georgia, serif;
+    background: var(--paper);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.7;
+    font-size: 18px;
+  }
+  .sans { font-family: 'Inter', system-ui, sans-serif; }
+  .num { font-family: 'Inter', system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+  .ink-soft { color: var(--ink-soft); }
+  .ink-faint { color: var(--ink-faint); }
+  .accent { color: var(--accent); }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .blue { color: var(--blue); }
+  .rule { border-color: var(--rule); }
+  h1, h2, h3 { font-family: 'Lora', Georgia, serif; font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
+  .display { font-size: clamp(2.5rem, 7vw, 5.5rem); font-weight: 600; line-height: 1.02; letter-spacing: -0.025em; }
+  .subhead { font-size: clamp(1.1rem, 1.8vw, 1.35rem); font-weight: 400; line-height: 1.5; color: var(--ink-soft); font-style: italic; }
+  .section-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .lead { font-size: 1.22rem; line-height: 1.65; }
+  .lead::first-letter {
+    font-size: 4.5rem;
+    line-height: 0.85;
+    float: left;
+    padding-right: 12px;
+    padding-top: 6px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+  .pullquote {
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    line-height: 1.25;
+    font-weight: 500;
+    font-style: italic;
+    color: var(--ink);
+    border-left: 3px solid var(--accent);
+    padding: 8px 0 8px 28px;
+    margin: 48px 0;
+    max-width: 720px;
+  }
+  .beat {
+    margin: 56px 0;
+    max-width: 680px;
+  }
+  .beat p { margin-bottom: 1.3em; }
+  .figure {
+    margin: 64px auto;
+    max-width: 820px;
+  }
+  .figure-headline {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .figure-deck {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    margin-bottom: 28px;
+    line-height: 1.5;
+    max-width: 640px;
+  }
+  .figure-source {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    margin-top: 14px;
+  }
+  .container-tight { max-width: 680px; margin-left: auto; margin-right: auto; padding-left: 24px; padding-right: 24px; }
+  .container-wide { max-width: 1000px; margin-left: auto; margin-right: auto; padding-left: 24px; padding-right: 24px; }
+  a.inline-cite {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--accent);
+    cursor: help;
+  }
+  .tip {
+    position: relative;
+    cursor: help;
+    border-bottom: 1px dotted var(--ink-faint);
+  }
+  .tip:hover .tip-body { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  .tip-body {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translate(-50%, 6px);
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    padding: 12px 14px;
+    border-radius: 6px;
+    width: 280px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink);
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  .slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    width: 100%;
+    background: rgba(235, 231, 223, 0.1);
+    border-radius: 2px;
+    outline: none;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+  .slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: none;
+  }
+  .panel {
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .persona-tab {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 12px 18px;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .persona-tab:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .persona-tab.active { background: var(--accent); color: var(--paper); border-color: var(--accent); font-weight: 600; }
+  .ai-coverage td, .ai-coverage th {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--rule);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .ai-coverage th {
+    font-weight: 600;
+    color: var(--ink-soft);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom-color: var(--ink-faint);
+  }
+  .check { color: var(--green); font-weight: 600; }
+  .miss { color: var(--red); font-weight: 600; }
+  .partial { color: var(--accent); font-weight: 600; }
+  hr.divider {
+    border: 0;
+    border-top: 1px solid var(--rule);
+    margin: 96px auto;
+    max-width: 100px;
+    text-align: center;
+    overflow: visible;
+  }
+  hr.divider::after {
+    content: '◆ ◆ ◆';
+    display: inline-block;
+    transform: translateY(-15px);
+    background: var(--paper);
+    padding: 0 16px;
+    color: var(--ink-faint);
+    font-size: 10px;
+    letter-spacing: 0.5em;
+  }
+  /* Roadmap of eight beats — enhanced */
+  .roadmap-wrap {
+    position: relative;
+    margin-top: 20px;
+  }
+  .roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    position: relative;
+    z-index: 1;
+  }
+  @media (max-width: 900px) {
+    .roadmap-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 520px) {
+    .roadmap-grid { grid-template-columns: 1fr; }
+  }
+  .roadmap-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    background: linear-gradient(180deg, var(--paper-warm) 0%, rgba(26,24,20,0.6) 100%);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 20px 18px 22px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-height: 240px;
+  }
+  .roadmap-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .roadmap-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(212, 165, 116, 0.4);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4);
+  }
+  .roadmap-card:hover::before { transform: scaleX(1); }
+  .roadmap-card:hover .roadmap-illus { transform: scale(1.05); }
+  .roadmap-card:hover .roadmap-bignum { color: var(--accent-bright); }
+
+  .roadmap-illus {
+    width: 100%;
+    height: 42px;
+    margin-bottom: 16px;
+    color: var(--accent);
+    transition: transform 0.4s ease;
+    display: flex;
+    align-items: center;
+  }
+  .roadmap-illus svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .roadmap-illus path,
+  .roadmap-illus circle,
+  .roadmap-illus line,
+  .roadmap-illus rect,
+  .roadmap-illus polyline {
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .roadmap-illus .filled { fill: currentColor; stroke: none; }
+  .roadmap-illus text {
+    fill: currentColor;
+    stroke: none;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+  }
+  .roadmap-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .roadmap-bignum {
+    font-family: 'Inter', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--accent);
+    line-height: 0.85;
+    transition: color 0.3s ease;
+  }
+  .roadmap-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 9.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 700;
+  }
+  .roadmap-title {
+    font-family: 'Lora', serif;
+    font-weight: 600;
+    font-size: 1.08rem;
+    color: var(--ink);
+    margin-bottom: 8px;
+    line-height: 1.25;
+    letter-spacing: -0.005em;
+  }
+  .roadmap-gist {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    margin-top: auto;
+  }
+  /* Act-based illustration coloring */
+  .roadmap-card.act-problem .roadmap-illus { color: var(--red); }
+  .roadmap-card.act-pivot   .roadmap-illus { color: var(--blue); }
+  .roadmap-card.act-resolve .roadmap-illus { color: var(--green); }
+  .roadmap-card.act-problem:hover { border-color: rgba(201, 112, 100, 0.4); }
+  .roadmap-card.act-pivot:hover   { border-color: rgba(106, 150, 184, 0.5); }
+  .roadmap-card.act-resolve:hover { border-color: rgba(127, 182, 133, 0.4); }
+  .roadmap-card.act-problem::before { background: var(--red); }
+  .roadmap-card.act-pivot::before   { background: var(--blue); }
+  .roadmap-card.act-resolve::before { background: var(--green); }
+
+  /* Act legend */
+  .roadmap-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 18px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--ink-faint);
+  }
+  .roadmap-legend .swatch {
+    display: inline-block;
+    width: 14px;
+    height: 2px;
+    border-radius: 1px;
+    margin-right: 6px;
+    transform: translateY(-3px);
+  }
+  section[id^="part-"], #the-test { scroll-margin-top: 28px; }
+  .byline {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  @media (max-width: 640px) {
+    body { font-size: 17px; }
+    .lead::first-letter { font-size: 3.5rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="container-tight pt-24 pb-12">
+  <div class="byline mb-10">A Data Story · FY 2026 to 27</div>
+  <h1 class="display">The ₹12 Lakh Cliff</h1>
+  <p class="subhead mt-8">How three AIs, one outdated rule book, and a four day deadline taught me what it means to use AI for a decision that actually mattered.</p>
+  <div class="byline mt-12 pt-6 border-t rule">By Prudhvi Krovvidi · Published May 2026 · 12 min read</div>
+</header>
+
+<!-- OPENING / HOOK -->
+<section class="container-tight py-10">
+  <p class="lead">It is a Tuesday in May, and I have a deadline.</p>
+
+  <p>In four days, my company's tax declaration window closes. The system is called Darwinbox. The decision is called FBP, the <span class="tip">Flexible Benefits Plan<span class="tip-body">A corporate construct in India that lets salaried employees route part of their pay into tax-exempt buckets like meal cards, gift vouchers, NPS contributions, and fuel reimbursements. Done well, it can wipe out an entire year's tax bill.</span></span>, which lets salaried Indians reroute part of their pay into tax exempt buckets. Done well, it can eliminate an entire year's tax bill. Done poorly, it locks money into restricted use cards for no benefit at all.</p>
+
+  <p>I have done it badly before. This time I plan to ask an AI.</p>
+</section>
+
+<!-- ROADMAP: THE EIGHT BEATS -->
+<section class="container-wide py-10">
+  <div class="section-label mb-1">The story in eight beats</div>
+  <p class="sans" style="font-size: 13px; color: var(--ink-faint); margin-bottom: 4px;">Click any beat to jump in. Or read straight through.</p>
+
+  <div class="roadmap-wrap">
+    <div class="roadmap-grid">
+
+      <!-- 1. Setup -->
+      <a href="#part-1" class="roadmap-card">
+        <div class="roadmap-illus">
+          <svg viewBox="0 0 100 42">
+            <path d="M5 36 L 42 36 L 42 10 L 95 10"/>
+            <circle cx="42" cy="36" r="2.5" class="filled"/>
+            <text x="44" y="34" font-size="7">₹12L</text>
+          </svg>
+        </div>
+        <div class="roadmap-header">
+          <span class="roadmap-bignum">01</span>
+          <span class="roadmap-label">Part One</span>
+        </div>
+        <div class="roadmap-title">The Cliff</div>
+        <div class="roadmap-gist">At ₹12 lakh, tax is zero. At ₹12 lakh and one rupee, it isn't.</div>
+      </a>
+
+      <!-- 2. Problem -->
+      <a href="#part-2" class="roadmap-card act-problem">
+        <div class="roadmap-illus">
+          <svg viewBox="0 0 100 42">
+            <path d="M12 8 Q 8 8 8 14 V 26 Q 8 32 14 32 H 32 L 38 38 V 32 H 48 Q 54 32 54 26 V 14 Q 54 8 48 8 Z"/>
+            <text x="31" y="24" font-size="14" text-anchor="middle">?</text>
+            <circle cx="78" cy="20" r="11"/>
+            <path d="M78 13 V 20 L 84 24"/>
+          </svg>
+        </div>
+        <div class="roadmap-header">
+          <span class="roadmap-bignum">02</span>
+          <span class="roadmap-label">Part Two</span>
+        </div>
+        <div class="roadmap-title">The Confident Wrong Answer</div>
+        <div class="roadmap-gist">Claude answers fast. Then I ask it to check the web.</div>
+      </a>
+
+      <!-- 3. Problem -->
+      <a href="#part-3" class="roadmap-card act-problem">
+        <div class="roadmap-illus">
+          <svg viewBox="0 0 100 42">
+            <path d="M50 6 L 86 36 L 14 36 Z"/>
+            <line x1="50" y1="18" x2="50" y2="27"/>
+            <circle cx="50" cy="32" r="1.8" class="filled"/>
+            <circle cx="22" cy="14" r="3"/>
+            <circle cx="78" cy="14" r="3"/>
+            <path d="M22 17 V 22 M 19 21 L 25 21 M 78 17 V 22 M 75 21 L 81 21"/>
+          </svg>
+        </div>
+        <div class="roadmap-header">
+          <span class="roadmap-bignum">03</span>
+          <span class="roadmap-label">Part Three</span>
+        </div>
+        <div class="roadmap-title">The Risk That Wasn't Math</div>
+        <div class="roadmap-gist">ChatGPT catches something neither the math nor the law flagged.</div>
+      </a>
+
+      <!-- 4. Problem -->
+      <a href="#part-4" class="roadmap-card act-problem">
+        <div class="roadmap-illus">
+          <svg viewBox="0 0 100 42">
+            <rect x="8" y="10" width="28" height="22" rx="2"/>
+            <text x="22" y="25" font-size="9" text-anchor="middle">3(7)</text>
+            <path d="M42 21 L 60 21 M 55 16 L 60 21 L 55 26"/>
+            <rect x="64" y="10" width="28" height="22" rx="2"/>
+            <text x="78" y="25" font-size="9" text-anchor="middle">15(5)</text>
+          </svg>
+        </div>
+        <div class="roadmap-header">
+          <span class="roadmap-bignum">04</span>
+          <span class="roadmap-label">Part Four</span>
+        </div>
+        <div class="roadmap-title">The Rule Rename</div>
+        <div class="roadmap-gist">Gemini finds a third update neither of the first two caught.</div>
+      </a>
+
+      <!-- 5. Pivot -->
+      <a href="#part-5" class="roadmap-card act-pivot">
+        <div class="roadmap-illus">
+          <svg viewBox="0 0 100 42">
+            <circle cx="38" cy="21" r="14" opacity="0.85"/>
+            <circle cx="50" cy="21" r="14" opacity="0.85"/>
+            <circle cx="62" cy="21" r="14" opacity="0.85"/>
+          </svg>
+        </div>
+        <div class="roadmap-header">
+          <span class="roadmap-bignum">05</span>
+          <span class="roadmap-label">Part Five</span>
+        </div>
+        <div class="roadmap-title">What This Says About AI</div>
+        <div class="roadmap-gist">Each model carries a different shaped hole in its knowledge.</div>
+      </a>
+
+      <!-- 6. Resolve -->
+      <a href="#part-6" class="roadmap-card act-resolve">
+        <div class="roadmap-illus">
+          <svg viewBox="0 0 100 42">
+            <g>
+              <circle cx="18" cy="15" r="4"/>
+              <path d="M11 34 V 28 Q 11 22 18 22 Q 25 22 25 28 V 34"/>
+            </g>
+            <g>
+              <circle cx="40" cy="15" r="4"/>
+              <path d="M33 34 V 28 Q 33 22 40 22 Q 47 22 47 28 V 34"/>
+            </g>
+            <g>
+              <circle cx="62" cy="15" r="4"/>
+              <path d="M55 34 V 28 Q 55 22 62 22 Q 69 22 69 28 V 34"/>
+            </g>
+            <g>
+              <circle cx="84" cy="15" r="4"/>
+              <path d="M77 34 V 28 Q 77 22 84 22 Q 91 22 91 28 V 34"/>
+            </g>
+          </svg>
+        </div>
+        <div class="roadmap-header">
+          <span class="roadmap-bignum">06</span>
+          <span class="roadmap-label">Part Six</span>
+        </div>
+        <div class="roadmap-title">Four People, One Tuesday</div>
+        <div class="roadmap-gist">Same workflow, four different optimal answers across income brackets.</div>
+      </a>
+
+      <!-- 7. Resolve -->
+      <a href="#part-7" class="roadmap-card act-resolve">
+        <div class="roadmap-illus">
+          <svg viewBox="0 0 100 42">
+            <circle cx="50" cy="21" r="18" opacity="0.25"/>
+            <circle cx="50" cy="21" r="13" opacity="0.5"/>
+            <circle cx="50" cy="21" r="8"/>
+            <text x="50" y="24.5" font-size="9" text-anchor="middle" class="filled">₹</text>
+          </svg>
+        </div>
+        <div class="roadmap-header">
+          <span class="roadmap-bignum">07</span>
+          <span class="roadmap-label">Part Seven</span>
+        </div>
+        <div class="roadmap-title">The Number That Lands</div>
+        <div class="roadmap-gist">₹74,000 saved in four days. Not a rounding error. A signal.</div>
+      </a>
+
+      <!-- 8. Resolve -->
+      <a href="#part-8" class="roadmap-card act-resolve">
+        <div class="roadmap-illus">
+          <svg viewBox="0 0 100 42">
+            <path d="M10 10 L 42 21"/>
+            <path d="M10 21 L 42 21"/>
+            <path d="M10 32 L 42 21"/>
+            <circle cx="42" cy="21" r="2.5" class="filled"/>
+            <path d="M42 21 L 88 21 M 82 15 L 88 21 L 82 27" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="roadmap-header">
+          <span class="roadmap-bignum">08</span>
+          <span class="roadmap-label">Part Eight</span>
+        </div>
+        <div class="roadmap-title">What Changes</div>
+        <div class="roadmap-gist">Multi model verification is the new minimum for decisions that matter.</div>
+      </a>
+    </div>
+
+    <div class="roadmap-legend">
+      <span><span class="swatch" style="background: var(--accent);"></span>Setup</span>
+      <span><span class="swatch" style="background: var(--red);"></span>The problem unfolds</span>
+      <span><span class="swatch" style="background: var(--blue);"></span>The pivot</span>
+      <span><span class="swatch" style="background: var(--green);"></span>What we do with it</span>
+    </div>
+  </div>
+</section>
+
+<!-- THE CLIFF SETUP -->
+<section id="part-1" class="container-tight py-6">
+  <div class="section-label mb-3">Part One. The Cliff.</div>
+  <p>For those of us under India's New Tax Regime, the tax system behaves like a cliff. A taxable income of ₹11,99,999 carries a tax bill of zero. A taxable income of ₹12,00,001 does not. The 87A rebate, the provision that wipes tax to nil below the threshold, vanishes the moment you cross it.</p>
+
+  <p>The drop is not gradual. Between ₹12 lakh and roughly ₹12.71 lakh, a half measure called marginal relief partially softens the fall. Past that point, the full slab tax applies and keeps climbing. At ₹13.5 lakh of gross salary, with the standard deduction of ₹75,000 applied, the bill lands close to ₹74,000 a year.</p>
+
+  <p>The cliff is real. It is also tunable. Every rupee you route through FBP is a rupee that does not count toward taxable income. The math is unforgiving but the levers are within reach.</p>
+</section>
+
+<!-- FIGURE 1: THE CLIFF -->
+<figure class="figure container-wide">
+  <div class="figure-headline">At ₹12 lakh, tax is zero. At ₹12 lakh and one rupee, it isn't.</div>
+  <div class="figure-deck">Annual tax payable under India's New Tax Regime for FY 2026 to 27, plotted against taxable income. The dotted line marks the 87A rebate threshold.</div>
+  <div class="panel p-6" style="position: relative; height: 360px;">
+    <canvas id="cliffChart"></canvas>
+  </div>
+  <div class="figure-source">Calculation: Standard slabs, 87A rebate up to ₹12L, marginal relief through ₹12.71L, plus 4% cess.</div>
+</figure>
+
+<!-- ACT 1: FIRST AI -->
+<section id="part-2" class="container-tight py-6">
+  <div class="section-label mb-3">Part Two. The Confident Wrong Answer.</div>
+
+  <p>Claude answers fast. The maximum allowed on the meal card is ₹26,400 per year, ₹2,200 per month, derived from a rule that permits ₹50 per meal across two meals a day for twenty two working days in a month. The gift voucher cap is ₹5,000 per year, set by <span class="tip">Rule 3(7)(iv)<span class="tip-body">A provision in the Income Tax Rules, 1962, governing the perquisite valuation of gifts, vouchers, and tokens given by employers to employees. Limit: ₹5,000 aggregate per financial year.</span></span> of the Income Tax Rules of 1962. Together they bring the annual tax down from ₹74,000 to roughly ₹45,000.</p>
+
+  <p>A win. I almost stop there.</p>
+
+  <p>Then I ask Claude a second question. Not "is this right" but "verify every claim with web search."</p>
+
+  <p>The internet has news.</p>
+</section>
+
+<!-- ACT 2: THE RULE CHANGE -->
+<section class="container-tight py-6">
+  <p>On the first of April, six weeks before my Tuesday, the Income Tax Department issued new rules. The meal voucher limit quadrupled. ₹50 per meal became ₹200. The annual cap rose from ₹26,400 to ₹1,05,600. The restriction that confined the benefit to the old tax regime, the one with HRA and home loan deductions, was quietly deleted. The exemption now applied to the new regime too. The one I was on.</p>
+
+  <p>The first answer had been mathematically correct against the wrong rule book. Claude knew the framework. It did not know the framework had been replaced.</p>
+
+  <div class="pullquote">The first AI was not wrong because it was bad. It was wrong because it was trained on the world before April.</div>
+
+  <p>I rewrote my plan. I felt good about the new plan. Then I pasted it into ChatGPT, just to see if it agreed.</p>
+</section>
+
+<!-- ACT 3: CHATGPT -->
+<section id="part-3" class="container-tight py-6">
+  <div class="section-label mb-3">Part Three. The Risk That Wasn't Math.</div>
+
+  <p>ChatGPT agreed with the math. But it did not agree with the plan.</p>
+
+  <p>The risk it flagged was not in any formula. It was an implementation gap. Even if the law allowed meal cards to be tax exempt under the new regime, my company's payroll system had to be configured to treat them that way. If the system still classified the card as taxable, the entire optimization would collapse. Money would be locked into a restricted use card and I would pay the same tax anyway.</p>
+
+  <p>A different category of mistake. Not in the math, but in the world. Get HR to confirm before submitting, it said. Send a specific email. Wait for a specific answer.</p>
+
+  <p>I sent the email. I kept iterating. Then I pasted the plan into Gemini.</p>
+</section>
+
+<!-- ACT 4: GEMINI -->
+<section id="part-4" class="container-tight py-6">
+  <div class="section-label mb-3">Part Four. The Rule Rename.</div>
+
+  <p>Gemini found something different. The gift voucher limit, the one Claude had pegged at ₹5,000 from Rule 3(7)(iv) of 1962, had also changed on the first of April. The new rules renumbered the provision to Rule 15(5)(a) and tripled the cap from ₹5,000 to ₹15,000.</p>
+
+  <p>Claude, with web search, had caught the meal card update. It had missed this one. ChatGPT had not noticed either. Gemini did, with the rule number attached and three publications cited.</p>
+
+  <p>Three AIs. Three pieces of the answer. None of them complete on its own.</p>
+</section>
+
+<!-- FIGURE 2: AI COVERAGE TABLE -->
+<figure class="figure container-wide">
+  <div class="figure-headline">Each AI carried a different shaped hole in its knowledge.</div>
+  <div class="figure-deck">What each model knew, missed, or partially surfaced when asked the same question on the same Tuesday in May 2026.</div>
+  <div class="panel">
+    <table class="ai-coverage w-full">
+      <thead>
+        <tr>
+          <th style="width: 28%;">The question</th>
+          <th>Claude (no search)</th>
+          <th>Claude (with search)</th>
+          <th>ChatGPT</th>
+          <th>Gemini</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="sans">Meal card cap of ₹26,400 was raised to ₹1,05,600 effective April 1, 2026</span></td>
+          <td class="miss">Missed</td>
+          <td class="check">Caught</td>
+          <td class="check">Confirmed</td>
+          <td class="check">Confirmed</td>
+        </tr>
+        <tr>
+          <td><span class="sans">Meal card exemption now applies under the new regime, not only old</span></td>
+          <td class="miss">Missed</td>
+          <td class="check">Caught</td>
+          <td class="check">Confirmed</td>
+          <td class="check">Confirmed</td>
+        </tr>
+        <tr>
+          <td><span class="sans">Gift voucher cap raised from ₹5,000 to ₹15,000 under Rule 15(5)(a)</span></td>
+          <td class="miss">Missed</td>
+          <td class="miss">Missed</td>
+          <td class="miss">Missed</td>
+          <td class="check">Caught</td>
+        </tr>
+        <tr>
+          <td><span class="sans">Payroll implementation risk: get HR confirmation before submitting</span></td>
+          <td class="miss">Missed</td>
+          <td class="miss">Missed</td>
+          <td class="check">Caught</td>
+          <td class="partial">Mentioned</td>
+        </tr>
+        <tr>
+          <td><span class="sans">Section renumbering: 87A became 156, 115BAC became 202 under IT Act 2025</span></td>
+          <td class="miss">Missed</td>
+          <td class="partial">Partial</td>
+          <td class="miss">Missed</td>
+          <td class="check">Caught</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="figure-source">Observed during six rounds of cross validation in May 2026. The pattern is the point, not the specific model rankings.</div>
+</figure>
+
+<!-- THE REVELATION -->
+<section id="part-5" class="container-tight py-6">
+  <div class="section-label mb-3">Part Five. What This Says About AI.</div>
+
+  <p>Here is the thing about training data. It freezes. Claude's most recent knowledge stops months before the rules I needed. Web search closes some of the gap but not all of it, because the internet does not have a single canonical version of any update, and Claude's web index has its own coverage holes. Gemini's training freezes at a different point and surfaces a different subset of the public record. ChatGPT is different again.</p>
+
+  <p>The mental model many people carry, that AI is a smart friend who knows the latest thing, is wrong. AI is many smart friends with overlapping but non identical knowledge of the past, none of them with perfect coverage of the present.</p>
+
+  <p>For decisions involving rules that change, asking one AI is like asking one friend. Probably useful. Probably incomplete. Occasionally, dangerously confident in the wrong answer.</p>
+
+  <div class="pullquote">Multi model verification is not paranoia. It is the cost of taking AI seriously.</div>
+</section>
+
+<hr class="divider" />
+
+<!-- INTERACTIVE: THE CLIFF NAVIGATOR -->
+<section class="container-wide py-10">
+  <div class="container-tight px-0">
+    <div class="section-label mb-3">The Test.</div>
+    <h2 class="text-3xl md:text-4xl font-semibold mb-4" style="line-height:1.2;">Drag the levers. Watch the cliff.</h2>
+    <p class="mb-8 ink-soft">The interactive below is the same calculation that played out on my Tuesday. Set a gross salary. Move the meal card, gift voucher, and NPS sliders. Watch the buffer between your taxable income and the ₹12 lakh cliff. Green is zero tax. Anything else is the bill.</p>
+  </div>
+
+  <div class="panel p-6 md:p-8">
+    <div class="grid md:grid-cols-2 gap-10 items-start">
+      <div class="space-y-7">
+        <div>
+          <div class="flex justify-between items-baseline mb-2 sans">
+            <label class="text-sm ink-soft">Gross annual salary</label>
+            <span id="ctcValue" class="num accent font-semibold">₹13.5L</span>
+          </div>
+          <input type="range" id="ctcSlider" class="slider" min="800000" max="3000000" step="50000" value="1350000" />
+          <div class="flex justify-between text-xs ink-faint mt-1 sans"><span>₹8L</span><span>₹30L</span></div>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-baseline mb-2 sans">
+            <label class="text-sm ink-soft">Meal card per year</label>
+            <span id="mealValue" class="num accent font-semibold">₹65,000</span>
+          </div>
+          <input type="range" id="mealSlider" class="slider" min="0" max="105600" step="2400" value="65000" />
+          <div class="flex justify-between text-xs ink-faint mt-1 sans"><span>₹0</span><span>₹1,05,600</span></div>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-baseline mb-2 sans">
+            <label class="text-sm ink-soft">Gift voucher per year</label>
+            <span id="giftValue" class="num accent font-semibold">₹15,000</span>
+          </div>
+          <input type="range" id="giftSlider" class="slider" min="0" max="15000" step="1000" value="15000" />
+          <div class="flex justify-between text-xs ink-faint mt-1 sans"><span>₹0</span><span>₹15,000</span></div>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-baseline mb-2 sans">
+            <label class="text-sm ink-soft">Corporate NPS per year</label>
+            <span id="npsValue" class="num accent font-semibold">₹0</span>
+          </div>
+          <input type="range" id="npsSlider" class="slider" min="0" max="400000" step="5000" value="0" />
+          <div class="flex justify-between text-xs ink-faint mt-1 sans"><span>₹0</span><span>₹4L</span></div>
+        </div>
+      </div>
+
+      <div>
+        <div id="statusBanner" class="sans text-sm font-medium px-4 py-3 mb-5 rounded" style="background: rgba(127,182,133,0.12); color: var(--green); border: 1px solid rgba(127,182,133,0.3);">
+          ZERO TAX. Section 87A rebate applies.
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-5">
+          <div>
+            <div class="sans text-xs ink-faint uppercase tracking-wider mb-1">Net taxable</div>
+            <div id="taxableOut" class="num text-2xl font-semibold">₹11,95,000</div>
+          </div>
+          <div>
+            <div class="sans text-xs ink-faint uppercase tracking-wider mb-1">Buffer below cliff</div>
+            <div id="bufferOut" class="num text-2xl font-semibold green">₹5,000</div>
+          </div>
+          <div>
+            <div class="sans text-xs ink-faint uppercase tracking-wider mb-1">Final tax</div>
+            <div id="taxOut" class="num text-2xl font-semibold green">₹0</div>
+          </div>
+          <div>
+            <div class="sans text-xs ink-faint uppercase tracking-wider mb-1">Saved vs no FBP</div>
+            <div id="savedOut" class="num text-2xl font-semibold accent">₹74,100</div>
+          </div>
+        </div>
+
+        <div style="position: relative; height: 180px; width: 100%;">
+          <canvas id="navChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- UNIVERSALITY: PERSONAS -->
+<section id="part-6" class="container-tight py-10">
+  <div class="section-label mb-3">Part Six. Four People, One Tuesday.</div>
+  <p>This is not just my story. The optimization depends on what bracket you sit in. Four synthetic people, none of them real, all of them facing the same question, all of them arriving at different correct answers.</p>
+</section>
+
+<section class="container-wide pb-4">
+  <div class="flex flex-wrap gap-2 mb-6">
+    <button class="persona-tab active" data-key="riya">Riya · ₹10L</button>
+    <button class="persona-tab" data-key="aarav">Aarav · ₹13.5L</button>
+    <button class="persona-tab" data-key="neha">Neha · ₹18L</button>
+    <button class="persona-tab" data-key="vikram">Vikram · ₹28L</button>
+  </div>
+
+  <div id="personaPanel" class="panel p-6 md:p-10"></div>
+</section>
+
+<!-- FIGURE 3: PERSONA COMPARISON -->
+<figure class="figure container-wide">
+  <div class="figure-headline">The same workflow saves four different amounts.</div>
+  <div class="figure-deck">Annual tax saved through FBP optimization, by income bracket. The biggest absolute saving sits with the highest earner. The biggest relative return sits with the person right above the cliff.</div>
+  <div class="panel p-6" style="position: relative; height: 320px;">
+    <canvas id="comparisonChart"></canvas>
+  </div>
+  <div class="figure-source">Calculated using New Tax Regime slabs for FY 2026 to 27. NPS contribution at the maximum 14% of basic salary where applicable.</div>
+</figure>
+
+<!-- WAIT REALLY -->
+<section id="part-7" class="container-tight py-6">
+  <div class="section-label mb-3">Part Seven. The Number That Lands.</div>
+
+  <p>The number that should land hardest: ₹74,000 saved in four days of iteration, using free tools, with the first AI giving the wrong answer.</p>
+
+  <p>That is not a rounding error. That is a signal about how to use these tools for anything that matters.</p>
+
+  <div class="pullquote">The first AI was confident. The second was confident. The third was confident. The truth was a composite no single one of them held.</div>
+</section>
+
+<!-- SO WHAT -->
+<section id="part-8" class="container-tight py-6">
+  <div class="section-label mb-3">Part Eight. What Changes.</div>
+
+  <p>For any decision that involves rules that change, this is the new minimum. Ask the AI. Then ask it to verify against the web. Then paste the answer into a second AI for review. Then look for a real world artifact that confirms or refutes the claim.</p>
+
+  <p>My company's FBP form already had the new caps baked in. The form was the answer. I just took the long route to find it.</p>
+
+  <p>If a single AI is enough for your decision, the decision probably did not need an AI.</p>
+</section>
+
+<!-- CAVEAT -->
+<section class="container-tight py-6">
+  <div class="section-label mb-3">What I would want to confirm.</div>
+
+  <p>The plan works only if my company's payroll actually processes the meal card as tax exempt under the new regime. The law says it should. The form suggests it will. The HR email implies it does. The proof arrives at the end of June, when the TDS line on my payslip should drop to zero. If it does not, I will know something in the implementation chain broke, and I will have a different story to tell.</p>
+
+  <p>This is what intellectual honesty looks like under deadlines. State the confidence level. Name the test. Move forward.</p>
+</section>
+
+<!-- CLOSING -->
+<section class="container-tight py-10">
+  <p>It is a Tuesday in May. I have one day left on my deadline. I have submitted enough to the meal card and the gift voucher to bring my taxable income just under the cliff. My tax is zero.</p>
+
+  <p>The work was iteration. The tools were free. The lesson was older than the tools.</p>
+
+  <div class="pullquote" style="border-left-color: var(--green);">Trust, but cross verify.</div>
+</section>
+
+<!-- FOOTER -->
+<footer class="container-tight py-12 mt-12 border-t rule sans">
+  <div class="text-sm ink-soft mb-3">If you are an Indian salaried employee under the New Tax Regime, and your FBP window is still open, the cliff calculation above applies to your salary too. Run the numbers. The savings are not theoretical.</div>
+  <div class="text-xs ink-faint mt-6">
+    Personas in this piece are synthetic. Calculations are based on rules effective 1 April 2026. Not tax advice. Verify with your CA, employer, and the Income Tax Department before acting.
+  </div>
+  <div class="text-xs ink-faint mt-4">
+    Sources: Income Tax Rules 2026 · CBDT notifications · Income Tax Department of India · ClearTax · KPMG India Flash Alert 2026-081 · TaxGuru.
+  </div>
+</footer>
+
+<script>
+// ============== TAX MATH ==============
+const SD = 75000;
+
+function calcTax(taxable) {
+  if (taxable <= 400000) return 0;
+  let tax;
+  if (taxable <= 800000) tax = (taxable - 400000) * 0.05;
+  else if (taxable <= 1200000) tax = 20000 + (taxable - 800000) * 0.10;
+  else if (taxable <= 1600000) tax = 60000 + (taxable - 1200000) * 0.15;
+  else if (taxable <= 2000000) tax = 120000 + (taxable - 1600000) * 0.20;
+  else if (taxable <= 2400000) tax = 200000 + (taxable - 2000000) * 0.25;
+  else tax = 300000 + (taxable - 2400000) * 0.30;
+
+  if (taxable <= 1200000) return 0;
+  const excess = taxable - 1200000;
+  if (tax > excess) tax = excess;
+  return Math.round(tax * 1.04);
+}
+
+const fmt = n => {
+  if (n === 0) return '₹0';
+  if (Math.abs(n) >= 100000) return '₹' + (n/100000).toFixed(2).replace(/\.?0+$/, '') + 'L';
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+};
+const fmtFull = n => n === 0 ? '₹0' : '₹' + Math.round(n).toLocaleString('en-IN');
+
+// ============== FIGURE 1: THE CLIFF ==============
+(function(){
+  const labels = [];
+  const data = [];
+  for (let i = 1000000; i <= 1500000; i += 10000) {
+    labels.push(i);
+    data.push(calcTax(i));
+  }
+  const ctx = document.getElementById('cliffChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        borderColor: '#d4a574',
+        backgroundColor: 'rgba(212, 165, 116, 0.08)',
+        tension: 0,
+        pointRadius: 0,
+        borderWidth: 2.5,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1814',
+          titleColor: '#ebe7df',
+          bodyColor: '#ebe7df',
+          borderColor: '#d4a574',
+          borderWidth: 1,
+          padding: 12,
+          callbacks: {
+            title: items => 'Taxable income: ' + fmt(parseInt(items[0].label)),
+            label: item => 'Tax payable: ' + fmtFull(item.parsed.y)
+          }
+        },
+        annotation: {}
+      },
+      scales: {
+        x: {
+          type: 'linear',
+          min: 1000000,
+          max: 1500000,
+          ticks: {
+            color: 'rgba(235,231,223,0.5)',
+            callback: v => '₹' + (v/100000).toFixed(1) + 'L',
+            font: { family: 'Inter', size: 11 },
+            stepSize: 100000
+          },
+          grid: { color: 'rgba(235,231,223,0.04)' }
+        },
+        y: {
+          ticks: {
+            color: 'rgba(235,231,223,0.5)',
+            callback: v => v === 0 ? '₹0' : '₹' + (v/1000).toFixed(0) + 'K',
+            font: { family: 'Inter', size: 11 }
+          },
+          grid: { color: 'rgba(235,231,223,0.04)' }
+        }
+      }
+    },
+    plugins: [{
+      id: 'cliffAnnotations',
+      afterDraw: chart => {
+        const { ctx, chartArea: { top, bottom, left, right }, scales: { x, y } } = chart;
+        const cliffX = x.getPixelForValue(1200000);
+
+        ctx.save();
+        ctx.strokeStyle = 'rgba(201, 112, 100, 0.5)';
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(cliffX, top);
+        ctx.lineTo(cliffX, bottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.font = '600 11px Inter';
+        ctx.fillStyle = '#c97064';
+        ctx.fillText('₹12L cliff', cliffX + 8, top + 18);
+
+        ctx.font = '500 12px Inter';
+        ctx.fillStyle = '#7fb685';
+        ctx.fillText('zero tax zone', left + 12, top + 18);
+
+        ctx.font = '500 12px Inter';
+        ctx.fillStyle = '#d4a574';
+        ctx.fillText('full slab tax', cliffX + 8, bottom - 12);
+
+        ctx.restore();
+      }
+    }]
+  });
+})();
+
+// ============== INTERACTIVE: NAVIGATOR ==============
+const sliders = {
+  ctc: document.getElementById('ctcSlider'),
+  meal: document.getElementById('mealSlider'),
+  gift: document.getElementById('giftSlider'),
+  nps: document.getElementById('npsSlider')
+};
+const displays = {
+  ctc: document.getElementById('ctcValue'),
+  meal: document.getElementById('mealValue'),
+  gift: document.getElementById('giftValue'),
+  nps: document.getElementById('npsValue'),
+  taxable: document.getElementById('taxableOut'),
+  buffer: document.getElementById('bufferOut'),
+  tax: document.getElementById('taxOut'),
+  saved: document.getElementById('savedOut'),
+  banner: document.getElementById('statusBanner')
+};
+
+let navChart = null;
+
+function updateNav() {
+  const ctc = +sliders.ctc.value;
+  const meal = +sliders.meal.value;
+  const gift = +sliders.gift.value;
+  const nps = +sliders.nps.value;
+
+  displays.ctc.textContent = '₹' + (ctc/100000).toFixed(1).replace(/\.0$/, '') + 'L';
+  displays.meal.textContent = fmtFull(meal);
+  displays.gift.textContent = fmtFull(gift);
+  displays.nps.textContent = fmtFull(nps);
+
+  const taxable = Math.max(0, ctc - meal - gift - nps - SD);
+  const tax = calcTax(taxable);
+  const baselineTax = calcTax(Math.max(0, ctc - SD));
+  const saved = baselineTax - tax;
+  const buffer = 1200000 - taxable;
+
+  displays.taxable.textContent = fmtFull(taxable);
+  displays.tax.textContent = fmtFull(tax);
+  displays.saved.textContent = fmtFull(saved);
+
+  if (buffer >= 0) {
+    displays.buffer.textContent = fmtFull(buffer);
+    displays.buffer.className = 'num text-2xl font-semibold green';
+  } else {
+    displays.buffer.textContent = '−' + fmtFull(-buffer);
+    displays.buffer.className = 'num text-2xl font-semibold red';
+  }
+
+  if (tax === 0) {
+    displays.banner.textContent = 'ZERO TAX. Section 87A rebate applies.';
+    displays.banner.style.background = 'rgba(127,182,133,0.12)';
+    displays.banner.style.color = 'var(--green)';
+    displays.banner.style.borderColor = 'rgba(127,182,133,0.3)';
+  } else if (taxable <= 1270588) {
+    displays.banner.textContent = 'PARTIAL RELIEF. You are inside the marginal relief zone.';
+    displays.banner.style.background = 'rgba(212,165,116,0.12)';
+    displays.banner.style.color = 'var(--accent)';
+    displays.banner.style.borderColor = 'rgba(212,165,116,0.3)';
+  } else {
+    displays.banner.textContent = 'FULL TAX. You are past the cliff and beyond marginal relief.';
+    displays.banner.style.background = 'rgba(201,112,100,0.12)';
+    displays.banner.style.color = 'var(--red)';
+    displays.banner.style.borderColor = 'rgba(201,112,100,0.3)';
+  }
+
+  drawNav(taxable);
+}
+
+function drawNav(currentTaxable) {
+  const labels = [];
+  const data = [];
+  for (let i = 1000000; i <= 1500000; i += 10000) {
+    labels.push(i);
+    data.push(calcTax(i));
+  }
+  const dot = labels.map(l => l === Math.round(currentTaxable / 10000) * 10000 ? calcTax(l) : null);
+
+  if (navChart) {
+    navChart.data.datasets[1].data = labels.map(l => null);
+    const idx = Math.round((currentTaxable - 1000000) / 10000);
+    if (idx >= 0 && idx < labels.length) {
+      navChart.data.datasets[1].data[idx] = calcTax(currentTaxable);
+    }
+    navChart.update('none');
+    return;
+  }
+  const ctx = document.getElementById('navChart').getContext('2d');
+  navChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        { data: data, borderColor: '#6a96b8', backgroundColor: 'rgba(106,150,184,0.08)', tension: 0, pointRadius: 0, borderWidth: 2, fill: true },
+        { data: labels.map(() => null), borderColor: '#d4a574', backgroundColor: '#d4a574', pointRadius: 7, pointHoverRadius: 9, showLine: false }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        x: {
+          type: 'linear', min: 1000000, max: 1500000,
+          ticks: { color: 'rgba(235,231,223,0.4)', callback: v => '₹' + (v/100000).toFixed(1) + 'L', font: { family: 'Inter', size: 10 }, maxTicksLimit: 6 },
+          grid: { display: false }
+        },
+        y: {
+          ticks: { color: 'rgba(235,231,223,0.4)', callback: v => v === 0 ? '₹0' : '₹' + (v/1000).toFixed(0) + 'K', font: { family: 'Inter', size: 10 } },
+          grid: { color: 'rgba(235,231,223,0.04)' }
+        }
+      }
+    },
+    plugins: [{
+      id: 'cliffLine',
+      afterDraw: chart => {
+        const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
+        const px = x.getPixelForValue(1200000);
+        ctx.save();
+        ctx.strokeStyle = 'rgba(201,112,100,0.4)';
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(px, top);
+        ctx.lineTo(px, bottom);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }]
+  });
+  updateNav();
+}
+
+Object.values(sliders).forEach(s => s.addEventListener('input', updateNav));
+updateNav();
+
+// ============== PERSONAS ==============
+const personas = {
+  riya: {
+    name: 'Riya', age: 23, role: 'Software Engineer, one year out of college',
+    ctc: 1000000,
+    place: 'Bengaluru',
+    fbp: { meal: 0, gift: 0, nps: 0 },
+    body: `Riya earns ₹10 lakh a year. After the ₹75,000 standard deduction, her taxable income is ₹9.25 lakh. She is comfortably below the cliff. Her tax bill is already zero.<br><br>For her, FBP saves nothing. Routing salary into a meal card would just convert flexible cash into restricted spend for no tax benefit. The correct answer is to leave it alone.<br><br>The lesson lurking here: <em>FBP is not free money</em>. It is a tool, and tools have a context where they help and one where they do not.`
+  },
+  aarav: {
+    name: 'Aarav', age: 26, role: 'Mid level engineer at a product company',
+    ctc: 1350000,
+    place: 'Hyderabad',
+    fbp: { meal: 65000, gift: 15000, nps: 0 },
+    body: `Aarav earns ₹13.5 lakh. After standard deduction his taxable income lands at ₹12.75 lakh, just past the cliff. His tax bill comes in at roughly ₹74,000 a year, with no marginal relief, because he is past the relief breakeven of ₹12.71 lakh.<br><br>Eighty thousand rupees through FBP brings his taxable income to ₹11.95 lakh. The 87A rebate kicks in. His tax becomes zero.<br><br>This is the highest return on effort move in the room. ₹80,000 of restricted spend in exchange for ₹74,000 of tax saved. An effective return of ninety three percent.`
+  },
+  neha: {
+    name: 'Neha', age: 31, role: 'Engineering manager',
+    ctc: 1800000,
+    place: 'Pune',
+    fbp: { meal: 105600, gift: 15000, nps: 88200 },
+    body: `Neha earns ₹18 lakh. The cliff is out of reach. Even with maximum FBP, she cannot bring her taxable income below ₹12 lakh.<br><br>Her optimization shifts. Instead of chasing zero tax, she chases slab compression. Every rupee she routes through FBP is a rupee taxed at fifteen percent that no longer counts.<br><br>Maxing the meal card, the gift voucher, and corporate NPS at fourteen percent of her basic salary saves her ₹39,000 in tax. The NPS contribution also adds ₹88,200 to her retirement corpus on the side. The total economic gain comes to ₹1.27 lakh a year.`
+  },
+  vikram: {
+    name: 'Vikram', age: 38, role: 'Senior director',
+    ctc: 2800000,
+    place: 'Mumbai',
+    fbp: { meal: 105600, gift: 15000, nps: 137200 },
+    body: `Vikram earns ₹28 lakh. He sits in the thirty percent slab. Every rupee he can legally route into a deduction is a rupee saved at the highest marginal rate.<br><br>₹2.57 lakh through FBP saves him ₹80,000 in tax and adds ₹1.37 lakh to his retirement corpus. NPS goes from optional to essential. At his bracket, retirement contributions through employer NPS are not a financial planning suggestion. They are a tax planning necessity.<br><br>For Vikram, the question is not whether to opt for FBP. It is whether to revisit old versus new regime annually, because at this scale, HRA and home loan deductions can shift the math.`
+  }
+};
+
+function renderPersona(key) {
+  const p = personas[key];
+  const totalFBP = p.fbp.meal + p.fbp.gift + p.fbp.nps;
+  const baseTaxable = p.ctc - SD;
+  const newTaxable = Math.max(0, p.ctc - totalFBP - SD);
+  const baseTax = calcTax(baseTaxable);
+  const newTax = calcTax(newTaxable);
+  const saved = baseTax - newTax;
+
+  document.querySelectorAll('.persona-tab').forEach(b => b.classList.toggle('active', b.dataset.key === key));
+
+  document.getElementById('personaPanel').innerHTML = `
+    <div class="grid md:grid-cols-3 gap-10 items-start">
+      <div class="md:col-span-1">
+        <div class="sans text-xs ink-faint tracking-widest uppercase mb-2">Profile</div>
+        <h3 class="text-3xl font-semibold mb-1">${p.name}</h3>
+        <div class="sans text-sm ink-soft">${p.role}</div>
+        <div class="sans text-sm ink-soft">${p.place}, age ${p.age}</div>
+        <div class="num text-sm ink-soft mt-3">Annual CTC: <span class="ink">${fmtFull(p.ctc)}</span></div>
+      </div>
+      <div class="md:col-span-2">
+        <p style="font-size: 1.05rem;">${p.body}</p>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t rule">
+          <div>
+            <div class="sans text-xs ink-faint uppercase tracking-wider mb-1">Tax before</div>
+            <div class="num text-xl font-semibold">${fmtFull(baseTax)}</div>
+          </div>
+          <div>
+            <div class="sans text-xs ink-faint uppercase tracking-wider mb-1">Tax after</div>
+            <div class="num text-xl font-semibold green">${fmtFull(newTax)}</div>
+          </div>
+          <div>
+            <div class="sans text-xs ink-faint uppercase tracking-wider mb-1">FBP routed</div>
+            <div class="num text-xl font-semibold">${fmtFull(totalFBP)}</div>
+          </div>
+          <div>
+            <div class="sans text-xs ink-faint uppercase tracking-wider mb-1">Saved</div>
+            <div class="num text-xl font-semibold accent">${fmtFull(saved)}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+document.querySelectorAll('.persona-tab').forEach(btn => {
+  btn.addEventListener('click', () => renderPersona(btn.dataset.key));
+});
+renderPersona('riya');
+
+// ============== COMPARISON CHART ==============
+const compData = ['riya','aarav','neha','vikram'].map(k => {
+  const p = personas[k];
+  const total = p.fbp.meal + p.fbp.gift + p.fbp.nps;
+  return calcTax(p.ctc - SD) - calcTax(p.ctc - total - SD);
+});
+
+new Chart(document.getElementById('comparisonChart').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: ['Riya · ₹10L', 'Aarav · ₹13.5L', 'Neha · ₹18L', 'Vikram · ₹28L'],
+    datasets: [{
+      data: compData,
+      backgroundColor: ['#6a96b8', '#d4a574', '#7fb685', '#c97064'],
+      borderRadius: 2,
+      maxBarThickness: 80
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1a1814',
+        titleColor: '#ebe7df',
+        bodyColor: '#ebe7df',
+        borderColor: '#d4a574',
+        borderWidth: 1,
+        padding: 12,
+        callbacks: { label: c => 'Saves ' + fmtFull(c.parsed.y) + ' a year' }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { color: 'rgba(235,231,223,0.6)', font: { family: 'Inter', size: 12 } },
+        grid: { display: false }
+      },
+      y: {
+        ticks: {
+          color: 'rgba(235,231,223,0.5)',
+          callback: v => v === 0 ? '₹0' : '₹' + (v/1000).toFixed(0) + 'K',
+          font: { family: 'Inter', size: 11 }
+        },
+        grid: { color: 'rgba(235,231,223,0.04)' }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>

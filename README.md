@@ -42,9 +42,23 @@ What happens when an AI critically reviews every line of code across 86 reposito
 
 ---
 
+### [The Repository That Woke Up](./anand-talks/)
+
+A data detective story about S. Anand's GitHub "talks" repository: dormant for 5,112 days, then 29 talks in 7 months. What happens when the cost of knowledge synthesis drops to near zero?
+
+**Key Findings:**
+- 2,800% increase in documented output after May 2025
+- Vibe Coding, Vibe Analysis, Vibe Analytics as three core concepts
+- Cross-checking 5 LLMs reduces errors from 14% to 0.7%
+- A shift in what data scientists do, not whether they exist
+
+**Published:** January 2026 | **Type:** GitHub Analysis | **Focus:** Productivity explosion
+
+---
+
 ### [The Zero-Bug Miracle: Building Source-to-Settle in One Day](./zero-bug-miracle/)
 
-How one developer and Claude Code built a production-grade AI procurement system with 172 files, 1,500 lines of code, and zero bugs—in a single day. A real-time chronicle of human-AI collaboration at its finest.
+How one developer and Claude Code built a production-grade AI procurement system with 172 files, 1,500 lines of code, and zero bugs, in a single day. A real-time chronicle of human-AI collaboration at its finest.
 
 **Key Findings:**
 - 172 files created in 1 hour 2 minutes
@@ -53,6 +67,20 @@ How one developer and Claude Code built a production-grade AI procurement system
 - Real-time timestamps documenting the journey
 
 **Published:** January 2026 | **Type:** Case Study | **Duration:** 1 hour 2 minutes
+
+---
+
+### [The ₹12 Lakh Cliff: How Three AIs Disagreed About a Tax Bill](./twelve-lakh-cliff/)
+
+A Tuesday in May. One four day deadline. Three AIs giving three different answers, each confident, none complete. A real iteration log showing how multi model cross validation became the new minimum for any decision involving rules that change.
+
+**Key Findings:**
+- India's New Tax Regime creates a cliff at ₹12 lakh taxable income
+- No single AI caught every relevant rule update from April 2026
+- ₹80,000 routed through FBP saves roughly ₹74,000 in tax at ₹13.5L CTC
+- Workflow tested across four personas from ₹10L to ₹28L
+
+**Published:** May 2026 | **Type:** AI Workflow | **Length:** 12 min read
 
 ---
 
@@ -101,6 +129,8 @@ const storyFolders = [
     'ai-rorschach-test',
     'prudhvi-codereview',
     'zero-bug-miracle',
+    'anand-talks',
+    'twelve-lakh-cliff',
     'your-story-name'  // Add this line
 ];
 ```
