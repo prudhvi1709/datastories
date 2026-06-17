@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Hotel That Doubled Its Price and Nobody Blinked</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --paper:#faf7f0;
+    --ink:#1c1a17;
+    --muted:#6f6a61;
+    --rule:#e3ddd0;
+    --hot:#c0392b;      /* premium / inelastic */
+    --teal:#1f8a78;     /* elastic / discount */
+    --gold:#d99326;     /* festive */
+    --blue:#2c6e9b;     /* supply / cross */
+    --card:#fffdf8;
+    --shadow:0 14px 40px rgba(40,30,15,.10);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:Georgia,'Times New Roman',serif;
+    font-size:20px;line-height:1.7;-webkit-font-smoothing:antialiased;
+  }
+  .sans{font-family:'Helvetica Neue',Arial,sans-serif}
+  .measure{max-width:680px;margin:0 auto;padding:0 24px}
+  .wide{max-width:1060px;margin:0 auto;padding:0 24px}
+
+  /* progress bar */
+  #progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--hot);z-index:60}
+
+  /* HERO */
+  header.hero{padding:90px 0 40px;text-align:center}
+  .kicker{font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;letter-spacing:3px;
+    text-transform:uppercase;color:var(--hot);font-weight:700;margin-bottom:26px}
+  h1{font-size:clamp(34px,6vw,62px);line-height:1.05;font-weight:700;letter-spacing:-.5px;margin:0 auto;max-width:14ch}
+  .standfirst{font-size:22px;color:var(--muted);margin-top:26px;font-style:italic}
+  .byline{font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;letter-spacing:.5px;
+    color:var(--muted);margin-top:30px;text-transform:uppercase}
+
+  /* prose */
+  p.body{margin:24px 0}
+  .drop::first-letter{font-size:64px;float:left;line-height:.78;padding:6px 10px 0 0;color:var(--hot);font-weight:700}
+  .beat{font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;letter-spacing:2px;
+    text-transform:uppercase;color:var(--blue);font-weight:700;margin:80px 0 4px;text-align:center}
+  h2{font-size:clamp(28px,4vw,40px);line-height:1.12;font-weight:700;text-align:center;margin:0 auto 10px;max-width:18ch}
+  .pull{font-size:27px;line-height:1.4;color:var(--hot);font-style:italic;
+    border-left:3px solid var(--hot);padding:6px 0 6px 26px;margin:44px 0}
+
+  /* highlight term with tooltip */
+  .term{border-bottom:2px dotted var(--blue);cursor:help;color:var(--ink)}
+  .stat{color:var(--hot);font-weight:700;font-style:normal}
+
+  /* figure */
+  figure{margin:54px auto;max-width:980px}
+  .fig-head{font-family:'Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:22px;
+    line-height:1.25;margin:0 24px 4px;letter-spacing:-.2px}
+  .fig-sub{font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;color:var(--muted);margin:0 24px 18px}
+  .panel{background:var(--card);border:1px solid var(--rule);border-radius:14px;box-shadow:var(--shadow);padding:22px}
+  .chart-box{position:relative;height:400px}
+  figcaption{font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;color:var(--muted);
+    margin:12px 24px 0;font-style:italic}
+
+  /* big number band */
+  .bignum{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:60px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .bignum div{padding:26px 18px;text-align:center;border-right:1px solid var(--rule)}
+  .bignum div:last-child{border-right:0}
+  .bignum .n{font-size:40px;font-weight:700;letter-spacing:-1px;line-height:1}
+  .bignum .c{font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;color:var(--muted);margin-top:10px;line-height:1.35}
+
+  /* hotel chips (clickable) */
+  .chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:30px 0}
+  .chip{font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;border:1px solid var(--rule);
+    background:var(--card);border-radius:999px;padding:9px 16px;cursor:pointer;transition:.18s;display:flex;align-items:center;gap:8px}
+  .chip:hover{border-color:var(--ink);transform:translateY(-2px)}
+  .dot{width:9px;height:9px;border-radius:50%}
+
+  /* simulator */
+  .sim{background:#16140f;color:#f4efe4;border-radius:18px;padding:30px;margin:40px auto;max-width:980px;box-shadow:var(--shadow)}
+  .sim h3{font-family:'Helvetica Neue',Arial,sans-serif;margin:0 0 4px;font-size:21px}
+  .sim p.k{font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;color:#b8b0a0;margin:0 0 22px}
+  .sim-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:30px;align-items:center}
+  .sim-controls{font-family:'Helvetica Neue',Arial,sans-serif}
+  .seg{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap}
+  .seg button{flex:1;min-width:110px;background:#26221a;color:#cfc7b6;border:1px solid #3a342a;border-radius:10px;
+    padding:10px;font-size:13px;cursor:pointer;transition:.15s;font-family:inherit}
+  .seg button.on{background:#fff;color:#16140f;font-weight:700;border-color:#fff}
+  .slabel{display:flex;justify-content:space-between;font-size:13px;color:#b8b0a0;margin-bottom:8px}
+  input[type=range]{width:100%;accent-color:#e8b765;height:6px}
+  .readout{display:flex;gap:24px;margin-top:24px}
+  .readout div{flex:1}
+  .readout .rv{font-size:30px;font-weight:700}
+  .readout .rl{font-size:12px;color:#b8b0a0;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+  .verdict{margin-top:20px;font-size:15px;line-height:1.5;background:#221e17;border-radius:10px;padding:14px 16px;min-height:64px}
+
+  /* animated cross-price svg */
+  .flowwrap{max-width:980px;margin:50px auto}
+  .flow-note{font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;color:var(--muted);text-align:center;margin-top:10px}
+
+  /* process timeline */
+  .process{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:8px 30px 30px;margin:40px auto;max-width:820px;box-shadow:var(--shadow)}
+  .step{display:flex;gap:18px;padding:22px 0;border-bottom:1px dashed var(--rule)}
+  .step:last-child{border-bottom:0}
+  .step .num{font-family:'Helvetica Neue',Arial,sans-serif;flex:0 0 42px;height:42px;border-radius:50%;
+    background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px}
+  .step h4{font-family:'Helvetica Neue',Arial,sans-serif;margin:6px 0 6px;font-size:18px}
+  .step p{font-size:16px;line-height:1.55;color:var(--muted);margin:0}
+  .mono{font-family:'SF Mono',Menlo,Consolas,monospace;font-size:13px;background:#f0ebe0;border:1px solid var(--rule);
+    border-radius:8px;padding:12px 14px;color:#403a30;overflow-x:auto;margin-top:12px;white-space:pre;line-height:1.5}
+
+  /* caveat */
+  .caveat{border:1px solid var(--rule);border-left:4px solid var(--gold);background:#fdf8ee;
+    border-radius:10px;padding:22px 26px;margin:40px auto;max-width:680px}
+  .caveat h4{font-family:'Helvetica Neue',Arial,sans-serif;margin:0 0 8px;font-size:15px;letter-spacing:1px;text-transform:uppercase;color:var(--gold)}
+  .caveat p{font-size:17px;margin:8px 0 0}
+
+  footer{text-align:center;padding:60px 24px 80px;color:var(--muted);font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;line-height:1.7}
+
+  /* MODAL */
+  .overlay{position:fixed;inset:0;background:rgba(20,16,8,.55);backdrop-filter:blur(3px);
+    display:none;align-items:center;justify-content:center;z-index:80;padding:20px}
+  .overlay.show{display:flex}
+  .modal{background:var(--card);border-radius:18px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;
+    box-shadow:0 30px 80px rgba(0,0,0,.4);position:relative}
+  .modal-hd{padding:24px 26px 16px;border-bottom:1px solid var(--rule);position:sticky;top:0;background:var(--card);border-radius:18px 18px 0 0}
+  .modal-hd .x{position:absolute;top:18px;right:20px;cursor:pointer;font-size:24px;color:var(--muted);background:none;border:0;line-height:1}
+  .modal-hd h3{font-family:'Helvetica Neue',Arial,sans-serif;margin:0;font-size:23px;padding-right:30px}
+  .modal-hd .sub{font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;color:var(--muted);margin-top:6px}
+  .band{display:inline-block;font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;font-weight:700;
+    padding:4px 11px;border-radius:999px;margin-top:10px}
+  .modal-bd{padding:22px 26px 28px;font-family:'Helvetica Neue',Arial,sans-serif}
+  .mrow{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--rule);font-size:15px}
+  .mrow span:first-child{color:var(--muted)}
+  .mrow b{font-weight:700}
+  .mini{height:170px;margin:18px 0 6px;position:relative}
+  .mnarr{font-size:14.5px;line-height:1.6;color:#403a30;background:#f6f1e6;border-radius:10px;padding:14px 16px;margin-top:16px;font-family:Georgia,serif}
+
+  /* floating tooltip */
+  #tip{position:fixed;z-index:90;max-width:260px;background:var(--ink);color:var(--paper);
+    font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;line-height:1.5;padding:10px 13px;border-radius:9px;
+    pointer-events:none;opacity:0;transition:opacity .15s;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+
+  @media(max-width:760px){
+    body{font-size:18px}
+    .bignum{grid-template-columns:repeat(2,1fr)}
+    .bignum div:nth-child(2){border-right:0}
+    .sim-grid{grid-template-columns:1fr}
+    .bignum .n{font-size:32px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="tip"></div>
+
+<!-- HERO -->
+<header class="hero measure">
+  <div class="kicker">Pricing Intelligence &middot; Gachibowli, Hyderabad</div>
+  <h1>The hotel that doubled its price, and nobody blinked</h1>
+  <p class="standfirst">What seven months of room rates reveal about who holds power in a market, who quietly surrenders it, and why the discount tag is the most honest number on the page.</p>
+  <div class="byline">A data story &middot; Seven snapshots, June 2026 to January 2027</div>
+</header>
+
+<!-- HOOK -->
+<div class="measure">
+  <p class="body drop">On a weekday in September 2026, a single hotel on the edge of Hyderabad's tech corridor asked <span class="stat">Rupees 38,260</span> for one night's sleep. Three months earlier, the same hotel, the same rooms, the same lobby, the same staff, had asked Rupees 17,000. Nothing about the building had changed. Its guest rating sat unmoved at 4.1. Its review count hadn't ticked up in any meaningful way. And yet the price had more than doubled.</p>
+
+  <p class="body">Now imagine <em>you</em> are the traveller staring at that screen. A room two streets away, clean and well-reviewed, is going for a tenth of the price. Most of us would scroll on. But enough people don't, and that single fact, that some guests will pay almost anything while others vanish at the first rupee of markup, is the engine beneath the entire hotel market. Economists have a cold, clinical name for it. We will get there. First, the mystery.</p>
+
+  <p class="pull">If the rooms didn't change, and the reviews didn't change, what exactly were guests paying double for?</p>
+</div>
+
+<!-- BEAT 1: SETUP -->
+<div class="beat">Beat One &middot; The world as we assume it</div>
+<h2 class="measure">Everyone expects prices to move together</h2>
+<div class="measure">
+  <p class="body">Here is the comfortable assumption. <span class="term" data-tip="Gachibowli is Hyderabad's western IT and financial district, home to ISB, the US Consulate, and dozens of corporate campuses. It draws business and event travel year-round.">Gachibowli</span> is a business district. Business districts fill up on weekdays and empty on holidays. So you would expect the hotels here to rise and fall as one tide, lifting together for the festive rush, easing together when the city goes quiet. A rising sea, the saying goes, lifts all boats.</p>
+
+  <p class="body">We tracked the asking price of the same set of hotels across seven moments in time, from the summer of 2026 to the depths of the following winter. If the comfortable assumption holds, the lines on the next chart should rise and fall in loose formation, like a flock of birds banking together.</p>
+
+  <p class="body">They do not.</p>
+</div>
+
+<!-- FIG 1: line chart -->
+<figure class="wide">
+  <div class="fig-head">One line tears away from the flock</div>
+  <div class="fig-sub">Asking price per night across seven snapshots. Hover any point for the moment behind the number. Click a hotel name in the legend below the chart to open its full file.</div>
+  <div class="panel"><div class="chart-box"><canvas id="lineChart"></canvas></div></div>
+  <div class="chips" id="legendChips"></div>
+  <figcaption>The Hyatt (red) climbs into a price band the others never touch. The budget hotels barely lift off the floor. This is not one market moving together. It is several markets pretending to be one.</figcaption>
+</figure>
+
+<!-- BEAT 2: COMPLICATION -->
+<div class="beat">Beat Two &middot; The crack in the wisdom</div>
+<h2 class="measure">The same season, wildly different answers</h2>
+<div class="measure">
+  <p class="body">Look at what the festive stretch does to each hotel and the comfortable assumption falls apart. From June to its September peak, the <span class="term" data-tip="Hyatt Hyderabad Gachibowli, 5-star. Tracked range Rupees 17,000 to 38,260. Rating held at 4.1 across every snapshot.">five-star Hyatt</span> swings upward by <span class="stat">125 percent</span>. Down the road, the four-star Ellaa nudges its rate by all of <span class="stat">11 percent</span> across the same window. One hotel treats the calendar as a license to print money. The other barely lifts a finger.</p>
+
+  <p class="body">And then there is the third kind of hotel, the one that does the opposite of raising prices. The <span class="term" data-tip="Treebo is a budget-to-midscale hotel brand. Across snapshots its listed discounts ran 62 to 64 percent off the stated MRP.">Treebo</span> properties carry a sticker price near Rupees 18,000 and sell, night after night, for around Rupees 7,000. They are not pricing for the festive surge. They are bracing against it.</p>
+</div>
+
+<!-- big numbers -->
+<div class="bignum wide">
+  <div><div class="n" style="color:var(--hot)">+125%</div><div class="c">Hyatt's swing, June to September. The market's loudest voice.</div></div>
+  <div><div class="n" style="color:var(--gold)">+11%</div><div class="c">Ellaa's swing over the same months. A near whisper.</div></div>
+  <div><div class="n" style="color:var(--teal)">64%</div><div class="c">Deepest discount on the page, Treebo. Pricing to fill, not to win.</div></div>
+  <div><div class="n" style="color:var(--blue)">-28%</div><div class="c">Drop in available rooms, June to January. The market tightens.</div></div>
+</div>
+
+<div class="measure">
+  <p class="body">Three hotels, three philosophies, one street. The festive season is not a tide that lifts them together. It is a test, and each hotel answers it differently. The question is why, and the answer is the most useful idea in all of pricing.</p>
+</div>
+
+<!-- BEAT 3: REVELATION -->
+<div class="beat">Beat Three &middot; The idea underneath</div>
+<h2 class="measure">It comes down to one question: who can walk away?</h2>
+<div class="measure">
+  <p class="body">Economists call it <span class="term" data-tip="Price elasticity of demand: the percent change in how many people buy, divided by the percent change in price. Below 1, demand barely reacts (inelastic). Above 1, demand reacts sharply (elastic).">price elasticity</span>, but you can forget the term and keep the picture. Every hotel faces a simple, brutal question. <em>If I raise my price, how many guests walk away?</em></p>
+
+  <p class="body">For the Hyatt, the answer is: almost none. Its guests are consultants on expense accounts, executives flying in for a board meeting, families who decided months ago that this is the place. They are not comparison-shopping at midnight. So the Hyatt can double its rate and watch its rating hold steady at 4.1, because the people who would have complained never left. That is an <span class="stat">inelastic</span> hotel, and inelastic hotels charge what they like.</p>
+
+  <p class="pull">That's not a rounding error. That's a signal. The discount tag is a hotel confessing how scared it is of losing you.</p>
+
+  <p class="body">For Treebo, the answer is the reverse. Raise the price by a few hundred rupees and the booking evaporates to the cleaner, cheaper room next door. So Treebo never raises it. It slashes the sticker by nearly two-thirds and competes on the only axis it trusts: cheapness. That is an <span class="stat">elastic</span> hotel, and elastic hotels chase volume because yield was never theirs to chase.</p>
+
+  <p class="body">Here is the quiet revelation. You do not need booking volumes or occupancy reports to see which hotel is which. The discount depth already tells you. A hotel holding firm at zero percent off is a hotel that knows you'll pay. A hotel screaming 64 percent off is a hotel terrified you won't. The price tag is a mood ring.</p>
+</div>
+
+<!-- FIG 2: discount ladder + scatter -->
+<figure class="wide">
+  <div class="fig-head">Confidence has a colour, and you can sort hotels by it</div>
+  <div class="fig-sub">Each bar is one hotel's discount off its own stated price. Red holds firm. Green is bracing. Hover for the elasticity read on each.</div>
+  <div class="panel"><div class="chart-box"><canvas id="discChart"></canvas></div></div>
+  <figcaption>From the rack-rate aristocrats at zero percent (Hyatt, Fairfield) to the volume-chasers near two-thirds off (Treebo, Olive). The ladder is the elasticity spectrum made visible.</figcaption>
+</figure>
+
+<!-- SIMULATOR -->
+<div class="wide">
+  <div class="sim">
+    <h3>Feel it for yourself: turn the dial, watch the revenue</h3>
+    <p class="k">Pick a hotel type, then drag the price. The curve is each hotel's revenue as price rises. Inelastic hotels keep earning more the higher they push. Elastic hotels hit a wall and fall off it.</p>
+    <div class="sim-grid">
+      <div class="sim-controls">
+        <div class="seg" id="simSeg">
+          <button data-e="0.45" class="on">Inelastic (Hyatt-like)</button>
+          <button data-e="1.0">Mid (Deccan Serai-like)</button>
+          <button data-e="1.9">Elastic (Treebo-like)</button>
+        </div>
+        <div class="slabel"><span>Your nightly price</span><span id="priceOut">Rupees 17,000</span></div>
+        <input type="range" id="priceSlider" min="3000" max="40000" step="500" value="17000">
+        <div class="readout">
+          <div><div class="rv" id="demandOut">100</div><div class="rl">Demand index</div></div>
+          <div><div class="rv" id="revOut">100</div><div class="rl">Revenue index</div></div>
+        </div>
+        <div class="verdict" id="verdict"></div>
+      </div>
+      <div class="chart-box" style="height:300px"><canvas id="simChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<div class="measure">
+  <p class="body">Drag the elastic hotel's price upward and the revenue curve crests, then collapses, the guests fleeing faster than the price can climb. Drag the inelastic hotel and the curve just keeps rising, which is exactly why the Hyatt keeps reaching for higher numbers. Think of it like two shopkeepers: one sells diamonds, one sells umbrellas. The diamond seller can name a price; the umbrella seller prays for rain. Though unlike umbrellas, a hotel's elasticity shifts with the season, which is the next twist.</p>
+</div>
+
+<!-- cross-price animated SVG -->
+<div class="beat">The mechanism &middot; Where the overflow goes</div>
+<h2 class="measure">When the giants spike, the spillover has to land somewhere</h2>
+<div class="measure">
+  <p class="body">There is a second force at work, and it connects the hotels that look unconnected. When the Hyatt and the Sheraton vault past <span class="stat">Rupees 30,000</span> in the festive crush, they don't just earn more. They push a wave of priced-out travellers downhill, toward the budget rooms. Watch the demand flow.</p>
+</div>
+
+<div class="flowwrap">
+  <svg viewBox="0 0 900 320" width="100%" role="img" aria-label="Animated diagram: when premium hotels raise prices, demand flows to budget hotels">
+    <defs>
+      <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 Z" fill="#2c6e9b"/>
+      </marker>
+      <linearGradient id="gFlow" x1="0" x2="1">
+        <stop offset="0" stop-color="#c0392b"/><stop offset="1" stop-color="#1f8a78"/>
+      </linearGradient>
+    </defs>
+
+    <!-- premium nodes -->
+    <g class="sans">
+      <rect x="40" y="40" width="220" height="78" rx="12" fill="#fbeae7" stroke="#c0392b"/>
+      <text x="150" y="72" text-anchor="middle" font-size="17" font-weight="700" fill="#1c1a17">Hyatt &middot; Sheraton</text>
+      <text x="150" y="96" text-anchor="middle" font-size="13" fill="#6f6a61">Rupees 30k to 38k &nbsp;&#9650;</text>
+
+      <rect x="40" y="200" width="220" height="78" rx="12" fill="#fbeae7" stroke="#c0392b"/>
+      <text x="150" y="232" text-anchor="middle" font-size="17" font-weight="700" fill="#1c1a17">Marriott Exec Apts</text>
+      <text x="150" y="256" text-anchor="middle" font-size="13" fill="#6f6a61">Rupees 36,500 &nbsp;&#9650;</text>
+    </g>
+
+    <!-- budget nodes -->
+    <g class="sans">
+      <rect x="640" y="40" width="220" height="78" rx="12" fill="#e8f4f1" stroke="#1f8a78"/>
+      <text x="750" y="72" text-anchor="middle" font-size="17" font-weight="700" fill="#1c1a17">Treebo &middot; Housr</text>
+      <text x="750" y="96" text-anchor="middle" font-size="13" fill="#6f6a61">Rupees 4k to 7k</text>
+
+      <rect x="640" y="200" width="220" height="78" rx="12" fill="#e8f4f1" stroke="#1f8a78"/>
+      <text x="750" y="232" text-anchor="middle" font-size="17" font-weight="700" fill="#1c1a17">Bloom &middot; 32 Urban</text>
+      <text x="750" y="256" text-anchor="middle" font-size="13" fill="#6f6a61">Rupees 3k to 4k</text>
+    </g>
+
+    <!-- flow paths -->
+    <g fill="none" stroke="url(#gFlow)" stroke-width="3" marker-end="url(#arrow)" opacity=".85">
+      <path class="flow" d="M260,79 C440,79 470,79 638,79"/>
+      <path class="flow" d="M260,90 C430,150 470,200 638,232"/>
+      <path class="flow" d="M260,239 C440,239 470,150 638,96"/>
+      <path class="flow" d="M260,239 C440,239 470,239 638,239"/>
+    </g>
+
+    <!-- travelling dots -->
+    <g fill="#2c6e9b">
+      <circle r="6" class="pellet"><animateMotion dur="2.6s" repeatCount="indefinite" path="M260,79 C440,79 470,79 638,79"/></circle>
+      <circle r="6" class="pellet" fill="#d99326"><animateMotion dur="3.1s" begin="0.6s" repeatCount="indefinite" path="M260,90 C430,150 470,200 638,232"/></circle>
+      <circle r="6" class="pellet"><animateMotion dur="2.9s" begin="1.1s" repeatCount="indefinite" path="M260,239 C440,239 470,150 638,96"/></circle>
+      <circle r="6" class="pellet" fill="#d99326"><animateMotion dur="3.4s" begin="0.3s" repeatCount="indefinite" path="M260,239 C440,239 470,239 638,239"/></circle>
+    </g>
+    <text x="450" y="305" text-anchor="middle" class="sans" font-size="13" fill="#6f6a61">Priced-out demand flows from premium to budget: cross-price substitution in motion</text>
+  </svg>
+  <p class="flow-note">Each dot is a traveller who wanted the Hyatt and booked the Treebo instead. The budget hotels don't need to advertise during the festive rush. The giants advertise for them.</p>
+</div>
+
+<div class="measure">
+  <p class="body">This is why a budget hotel can hold its rate flat all year and still fill in October. Its demand isn't really about its own price. It's about the giant up the road deciding to get greedy. The hotels that look like rivals are, in this moment, business partners, one harvesting the wealthy, the other catching everyone it drops.</p>
+</div>
+
+<!-- BEAT 4: IMPLICATIONS -->
+<div class="beat">Beat Four &middot; So what changes</div>
+<h2 class="measure">The money is hiding in the gaps between the lines</h2>
+<div class="measure">
+  <p class="body">If you run one of these hotels, the story stops being interesting and starts being actionable. Three moves fall out of the data.</p>
+
+  <p class="body"><b>For the inelastic hotels, look down, not up.</b> The Hyatt has mastered the climb. What it may be missing is the floor. In the August lull it still asked Rupees 26,000, a number set by habit rather than demand. The opportunity isn't a higher peak. It's a smarter trough, shaving the off-season rate to capture the budget-conscious traveller who would happily trade up to a five-star at the right price, then snapping back to rack rate the moment the season turns.</p>
+
+  <p class="body"><b>For the elastic hotels, stop apologizing.</b> A hotel that lives at 60 percent off has trained its guests to wait for the cut. The October festive window, when the giants spike and the overflow comes looking, is the one moment its demand turns inelastic for it. That is the week to quietly trim the discount, not deepen it. The travellers arriving then have nowhere cheaper to go.</p>
+
+  <p class="body"><b>For everyone, watch the supply gauge.</b> The number of rooms on offer fell from <span class="stat">348 in June</span> to <span class="stat">252 in January</span>, a quarter of the market simply gone. Fewer rooms is the cleanest early-warning signal that pricing power is shifting toward whoever stays bookable. When supply tightens, hesitation is expensive.</p>
+
+  <p class="pull">The next move isn't a bigger spreadsheet. It's a daily question: who can walk away today, and who can't?</p>
+</div>
+
+<!-- THE TABLE (clickable) -->
+<div class="measure">
+  <p class="body">Below is the raw evidence, every tracked hotel and every snapshot. Click any hotel to open its file: the price journey, the elasticity read, and what the numbers are quietly saying.</p>
+</div>
+<figure class="wide">
+  <div class="fig-head">The full ledger &middot; click any hotel to investigate</div>
+  <div class="panel" style="padding:6px 6px 10px">
+    <div id="hotelTable"></div>
+  </div>
+  <figcaption>Prices in Rupees per night. An n/a means the hotel slipped out of the top results for that snapshot, itself a demand signal worth noting.</figcaption>
+</figure>
+
+<!-- PROCESS -->
+<div class="beat">Behind the curtain &middot; how we got the numbers</div>
+<h2 class="measure">No survey, no API. A browser agent that booked like a human</h2>
+<div class="measure">
+  <p class="body">A story is only as trustworthy as its evidence, so here is exactly how the evidence was gathered. There was no special data feed and no insider access. The numbers came the same way a guest's would: by opening a booking site and looking.</p>
+</div>
+
+<div class="process wide">
+  <div class="step">
+    <div class="num">1</div>
+    <div>
+      <h4>A browser agent searched like a real traveller</h4>
+      <p>An automated browser agent opened the hotel booking site and ran the exact search a guest would: area set to Gachibowli, one room, two adults, one night, sorted by price low to high, filtered to rooms above Rupees 3,000. No scraping of hidden endpoints. Just the page everyone sees.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="num">2</div>
+    <div>
+      <h4>It captured seven snapshots across the seasons</h4>
+      <p>The same search was repeated for seven check-in dates spanning summer, monsoon, the festive surge, Christmas, and the post-holiday recovery, holding the search constant so price was the only thing free to move.</p>
+      <div class="mono">area      = Gachibowli
+guests    = 2 adults, 1 room
+stay      = 1 night
+filter    = price > Rupees 3,000
+sort      = price, low to high
+dates     = Jun 18, Jul 15, Aug 14, Sep 15,
+            Oct 14, Dec 24, Jan 14</div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="num">3</div>
+    <div>
+      <h4>For each hotel it recorded the honest fields</h4>
+      <p>Name, star rating, property type, the price shown, the struck-through MRP, the discount percentage, the guest rating, and the review count, plus its rank on the page, which doubles as a rough demand signal.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="num">4</div>
+    <div>
+      <h4>Then it watched the same hotels over time</h4>
+      <p>By matching hotels across snapshots, the price journeys emerged: who climbed, who held, who discounted. Those journeys are every line and bar in this story. The discount field, captured for free, turned out to be the richest signal of all.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CAVEAT -->
+<div class="caveat measure">
+  <h4>What we'd want to confirm</h4>
+  <p>One honest limit, stated plainly. We are reading <em>asking</em> prices, not <em>bookings</em>. A high rate proves a hotel's confidence, not that the rooms sold. To turn this from a strong signal into a settled fact, the next step is occupancy data: did the Hyatt's Rupees 38,260 rooms actually fill? Everything here is robust as a read on pricing behaviour. Pair it with even one month of occupancy and it becomes a read on demand itself. That is the experiment worth running next.</p>
+</div>
+
+<div class="measure">
+  <p class="body" style="font-style:italic;color:var(--muted)">The hotel that doubled its price wasn't being reckless. It was answering the only question that matters, and answering it correctly: this week, its guests cannot walk away. Down the street, the hotel at 64 percent off was answering the same question with the opposite, equally correct, reply. Once you see the question, you cannot unsee it on any price tag again.</p>
+</div>
+
+<footer>
+  Gachibowli hotel pricing &middot; seven snapshots, June 2026 to January 2027 &middot; collected by automated browser agent<br>
+  Demand proxies: discount depth, page rank, review volume, available supply &middot; Built for elasticity modelling
+</footer>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true">
+  <div class="modal" id="modal">
+    <div class="modal-hd">
+      <button class="x" id="modalClose" aria-label="Close">&times;</button>
+      <h3 id="mTitle"></h3>
+      <div class="sub" id="mSub"></div>
+      <span class="band" id="mBand"></span>
+    </div>
+    <div class="modal-bd">
+      <div class="mini"><canvas id="miniChart"></canvas></div>
+      <div id="mRows"></div>
+      <div class="mnarr" id="mNarr"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const INR = v => 'Rupees ' + Number(v).toLocaleString('en-IN');
+const SNAPS = ['Jun','Jul','Aug','Sep','Oct','Dec','Jan'];
+const GRID='#e3ddd0', MUT='#6f6a61';
+Chart.defaults.font.family="'Helvetica Neue',Arial,sans-serif";
+Chart.defaults.color=MUT;
+
+// ---- DATA ----
+const HOTELS = [
+  {key:'hyatt', name:'Hyatt Gachibowli', type:'5-star Hotel', color:'#c0392b', rating:4.1, reviews:1025, disc:0, band:'Inelastic',
+    prices:[17000,25000,26000,38260,null,28350,26000],
+    narr:"The market's loudest voice. More than doubles its rate into the September festive peak while its 4.1 rating never moves. Guests here travel on expense accounts and committed plans; they do not walk away. The only money left on the table is the August lull, where Rupees 26,000 looks set by habit, not demand."},
+  {key:'fairfield', name:'Fairfield by Marriott', type:'4-star Hotel', color:'#7b2d22', rating:4.1, reviews:6528, disc:0, band:'Inelastic',
+    prices:[13249,13749,9599,14749,null,19249,17749],
+    narr:"A confident rack-rate player with the deepest review base on the page (6,528). Peaks at Rupees 19,249 for Christmas. Its dip to Rupees 9,599 in August is the clearest proof that even strong brands read the holiday exodus and cut to stay competitive."},
+  {key:'deccan', name:'Deccan Serai Grande', type:'Hotel', color:'#d99326', rating:4.4, reviews:1381, disc:26, band:'Testing sensitivity',
+    prices:[6686,null,null,15791,null,null,null],
+    narr:"The wildest single-month move in the dataset: a 136 percent surge from June to its September showing. A mid-tier hotel testing how high festive demand will let it climb. The fact it later drops out of the top results suggests it pushed near its ceiling."},
+  {key:'quad', name:'Quad Hotels', type:'4-star Hotel', color:'#2c6e9b', rating:4.5, reviews:124, disc:37, band:'Testing sensitivity',
+    prices:[5868,4720,4720,null,null,null,null],
+    narr:"Highest guest rating among the four-stars (4.5) but a thin review count (124). Actually cuts its price into the monsoon, the opposite of the giants, a young property buying reviews and occupancy rather than defending rate."},
+  {key:'ellaa', name:'Ellaa Hotel', type:'Hotel', color:'#1f8a78', rating:3.7, reviews:5825, disc:33, band:'Testing sensitivity',
+    prices:[5129,5364,5699,null,null,null,null],
+    narr:"The near-flat line. Just 11 percent of drift across the months it appears. A high-volume, lower-rated hotel (3.7) that competes on price stability and presence rather than premium positioning."},
+  {key:'treebo', name:'Treebo (brand avg)', type:'Budget chain', color:'#16a085', rating:3.8, reviews:283, disc:63, band:'Elastic',
+    prices:[null,null,null,null,5492,5776,7098],
+    narr:"The volume-chaser. Lists near Rupees 18,000 and sells around Rupees 7,000, a discount of 62 to 64 percent held night after night. This is a hotel that has trained its guests to wait for the cut. Its one inelastic moment is the October overflow, when priced-out premium guests come looking and it could quietly trim the discount."},
+  {key:'housr', name:'Housr 43 Gachibowli', type:'Serviced/Homestay', color:'#5d8aa8', rating:3.9, reviews:46, disc:51, band:'Elastic',
+    prices:[null,null,4367,4367,null,4367,5849],
+    narr:"A near-constant Rupees 4,367 across three snapshots, then a January step-up. The textbook flat-rate budget option: its demand rides on what the giants up the road decide to charge, not on its own pricing."}
+];
+
+const BAND_COLOR = {'Inelastic':'#c0392b','Testing sensitivity':'#d99326','Elastic':'#1f8a78'};
+const BAND_BG = {'Inelastic':'#fbeae7','Testing sensitivity':'#fdf3e2','Elastic':'#e8f4f1'};
+
+// ---- TOOLTIP (terms) ----
+const tip=document.getElementById('tip');
+let tipT;
+function showTip(el,txt){
+  tip.textContent=txt;
+  const r=el.getBoundingClientRect();
+  let x=r.left+r.width/2, y=r.top-10;
+  tip.style.opacity='1';
+  const tw=tip.offsetWidth, th=tip.offsetHeight;
+  x=Math.max(12,Math.min(x-tw/2,window.innerWidth-tw-12));
+  y=y-th; if(y<8){y=r.bottom+10;}
+  tip.style.left=x+'px'; tip.style.top=y+'px';
+}
+function hideTip(){tip.style.opacity='0';}
+document.querySelectorAll('.term').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{clearTimeout(tipT);tipT=setTimeout(()=>showTip(el,el.dataset.tip),120);});
+  el.addEventListener('mouseleave',()=>{clearTimeout(tipT);hideTip();});
+  el.addEventListener('click',e=>{e.stopPropagation();showTip(el,el.dataset.tip);setTimeout(hideTip,3000);});
+});
+
+// ---- LINE CHART ----
+const lineDatasets = HOTELS.filter(h=>['hyatt','fairfield','deccan','quad','ellaa'].includes(h.key)).map(h=>({
+  label:h.name, data:h.prices, borderColor:h.color,
+  backgroundColor:h.key==='hyatt'?'rgba(192,57,43,.08)':'transparent',
+  fill:h.key==='hyatt', tension:.35, borderWidth:h.key==='hyatt'?3.5:2,
+  spanGaps:true, pointRadius:4, pointHoverRadius:7, _key:h.key
+}));
+const lineChart=new Chart(document.getElementById('lineChart'),{
+  type:'line',
+  data:{labels:SNAPS,datasets:lineDatasets},
+  options:{responsive:true,maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'#1c1a17',padding:12,titleFont:{size:14},
+        callbacks:{label:c=>c.dataset.label+': '+(c.parsed.y==null?'not in top results':INR(c.parsed.y))}}},
+    onClick:(e,els)=>{if(els.length){openModal(lineDatasets[els[0].datasetIndex]._key);}},
+    scales:{
+      y:{grid:{color:GRID},ticks:{callback:v=>'Rs '+(v/1000)+'k'}},
+      x:{grid:{display:false}}
+    }
+  }
+});
+
+// legend chips (clickable -> modal)
+const legendWrap=document.getElementById('legendChips');
+HOTELS.forEach(h=>{
+  const c=document.createElement('div');c.className='chip';
+  c.innerHTML='<span class="dot" style="background:'+h.color+'"></span>'+h.name;
+  c.onclick=()=>openModal(h.key);
+  legendWrap.appendChild(c);
+});
+
+// ---- DISCOUNT CHART ----
+const discData=[...HOTELS].sort((a,b)=>b.disc-a.disc);
+new Chart(document.getElementById('discChart'),{
+  type:'bar',
+  data:{labels:discData.map(h=>h.name),
+    datasets:[{data:discData.map(h=>h.disc),
+      backgroundColor:discData.map(h=>BAND_COLOR[h.band]),borderRadius:6,_h:discData}]},
+  options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+    plugins:{legend:{display:false},
+      tooltip:{backgroundColor:'#1c1a17',padding:12,
+        callbacks:{
+          title:items=>discData[items[0].dataIndex].name,
+          label:c=>discData[c.dataIndex].disc+'% off  ('+discData[c.dataIndex].band+')',
+          afterLabel:c=>'Click bar to open file'}}},
+    onClick:(e,els)=>{if(els.length){openModal(discData[els[0].index].key);}},
+    scales:{x:{grid:{color:GRID},ticks:{callback:v=>v+'%'},max:70},y:{grid:{display:false}}}
+  }
+});
+
+// ---- TABLE ----
+function fmtCell(v){return v==null?'<span style="color:#bcb4a5">n/a</span>':Number(v).toLocaleString('en-IN');}
+function peakIdx(p){let m=-1,mi=-1;p.forEach((v,i)=>{if(v!=null&&v>m){m=v;mi=i;}});return mi;}
+let tbl='<table style="width:100%;border-collapse:collapse;font-family:\'Helvetica Neue\',Arial,sans-serif;font-size:14px">';
+tbl+='<thead><tr><th style="text-align:left;padding:12px 14px;color:#6f6a61;border-bottom:2px solid #e3ddd0;font-size:12px;text-transform:uppercase;letter-spacing:.5px">Hotel</th>';
+SNAPS.forEach(s=>tbl+='<th style="text-align:right;padding:12px 10px;color:#6f6a61;border-bottom:2px solid #e3ddd0;font-size:12px">'+s+'</th>');
+tbl+='<th style="text-align:center;padding:12px 14px;color:#6f6a61;border-bottom:2px solid #e3ddd0;font-size:12px">Band</th></tr></thead><tbody>';
+HOTELS.forEach(h=>{
+  const pk=peakIdx(h.prices);
+  tbl+='<tr class="trow" data-key="'+h.key+'" style="cursor:pointer;transition:.15s">';
+  tbl+='<td style="text-align:left;padding:11px 14px;border-bottom:1px solid #efe9dc"><span class="dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+h.color+';margin-right:8px"></span>'+h.name+'</td>';
+  h.prices.forEach((v,i)=>{
+    const peak=i===pk;
+    tbl+='<td style="text-align:right;padding:11px 10px;border-bottom:1px solid #efe9dc;'+(peak?'color:#c0392b;font-weight:700':'')+'">'+fmtCell(v)+'</td>';
+  });
+  tbl+='<td style="text-align:center;padding:11px 14px;border-bottom:1px solid #efe9dc"><span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;color:'+BAND_COLOR[h.band]+';background:'+BAND_BG[h.band]+'">'+h.band+'</span></td>';
+  tbl+='</tr>';
+});
+tbl+='</tbody></table>';
+document.getElementById('hotelTable').innerHTML=tbl;
+document.querySelectorAll('.trow').forEach(r=>{
+  r.addEventListener('click',()=>openModal(r.dataset.key));
+  r.addEventListener('mouseenter',()=>r.style.background='#f7f2e7');
+  r.addEventListener('mouseleave',()=>r.style.background='transparent');
+});
+
+// ---- MODAL ----
+const overlay=document.getElementById('overlay');
+let miniChart=null, lastFocus=null;
+function openModal(key){
+  const h=HOTELS.find(x=>x.key===key); if(!h)return;
+  lastFocus=document.activeElement;
+  document.getElementById('mTitle').textContent=h.name;
+  document.getElementById('mSub').textContent=h.type+'  ·  '+h.rating+'★  ('+h.reviews.toLocaleString('en-IN')+' reviews)';
+  const band=document.getElementById('mBand');
+  band.textContent=h.band; band.style.color=BAND_COLOR[h.band]; band.style.background=BAND_BG[h.band];
+  const valid=h.prices.filter(v=>v!=null);
+  const lo=Math.min(...valid), hi=Math.max(...valid);
+  const swing=lo>0?Math.round((hi-lo)/lo*100):0;
+  document.getElementById('mRows').innerHTML=
+    row('Lowest tracked',INR(lo))+
+    row('Highest tracked',INR(hi))+
+    row('Peak-to-trough swing','+'+swing+'%')+
+    row('Discount off MRP',h.disc+'%')+
+    row('Guest rating',h.rating+' ★')+
+    row('Review count',h.reviews.toLocaleString('en-IN'));
+  document.getElementById('mNarr').textContent=h.narr;
+  overlay.classList.add('show');
+  if(miniChart)miniChart.destroy();
+  miniChart=new Chart(document.getElementById('miniChart'),{
+    type:'line',
+    data:{labels:SNAPS,datasets:[{data:h.prices,borderColor:h.color,backgroundColor:h.color+'22',
+      fill:true,tension:.35,spanGaps:true,pointRadius:3,borderWidth:2.5}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y==null?'not listed':INR(c.parsed.y)}}},
+      scales:{y:{grid:{color:GRID},ticks:{callback:v=>(v/1000)+'k'}},x:{grid:{display:false}}}}
+  });
+  document.getElementById('modalClose').focus();
+}
+function row(a,b){return '<div class="mrow"><span>'+a+'</span><b>'+b+'</b></div>';}
+function closeModal(){overlay.classList.remove('show');if(lastFocus)lastFocus.focus();}
+document.getElementById('modalClose').onclick=closeModal;
+overlay.addEventListener('click',e=>{if(e.target===overlay)closeModal();});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&overlay.classList.contains('show'))closeModal();
+  if(e.key==='Tab'&&overlay.classList.contains('show')){
+    const f=overlay.querySelectorAll('button,a,canvas,[tabindex]');
+    if(f.length){const first=f[0],last=f[f.length-1];
+      if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
+  }
+});
+
+// ---- SIMULATOR ----
+let elasticity=0.45;
+const P0=17000, D0=100;
+const slider=document.getElementById('priceSlider');
+const priceOut=document.getElementById('priceOut');
+const demandOut=document.getElementById('demandOut');
+const revOut=document.getElementById('revOut');
+const verdict=document.getElementById('verdict');
+
+function demandAt(p){return D0*Math.pow(p/P0,-elasticity);}
+function curve(){
+  const xs=[],ys=[];
+  for(let p=3000;p<=40000;p+=1000){xs.push(p);ys.push(Math.round(demandAt(p)*p/P0));}
+  return {xs,ys};
+}
+const c0=curve();
+const simChart=new Chart(document.getElementById('simChart'),{
+  type:'line',
+  data:{labels:c0.xs.map(x=>(x/1000)+'k'),
+    datasets:[
+      {label:'Revenue',data:c0.ys,borderColor:'#e8b765',backgroundColor:'rgba(232,183,101,.15)',fill:true,tension:.3,pointRadius:0,borderWidth:3},
+      {label:'You',data:[],borderColor:'#fff',backgroundColor:'#fff',pointRadius:6,pointHoverRadius:7,showLine:false}
+    ]},
+  options:{responsive:true,maintainAspectRatio:false,animation:{duration:500},
+    plugins:{legend:{display:false},tooltip:{enabled:false}},
+    scales:{
+      y:{grid:{color:'#3a342a'},ticks:{color:'#b8b0a0'},title:{display:true,text:'Revenue index',color:'#b8b0a0'}},
+      x:{grid:{display:false},ticks:{color:'#b8b0a0',maxTicksLimit:8},title:{display:true,text:'Price (Rupees, thousands)',color:'#b8b0a0'}}
+    }}
+});
+function updateSim(){
+  const p=+slider.value;
+  priceOut.textContent=INR(p);
+  const d=demandAt(p), rev=d*p/P0;
+  demandOut.textContent=Math.round(d);
+  revOut.textContent=Math.round(rev);
+  const cv=curve();
+  simChart.data.datasets[0].data=cv.ys;
+  const idx=Math.round((p-3000)/1000);
+  const pt=cv.xs.map((x,i)=>i===idx?cv.ys[i]:null);
+  simChart.data.datasets[1].data=pt;
+  simChart.update();
+  // verdict
+  let v='';
+  if(elasticity<0.6){
+    v= p<P0 ? "You're leaving money on the table. Demand barely moves as you climb, so push the price higher and revenue follows. This is the Hyatt's whole strategy."
+            : "Revenue keeps rising with price. Inelastic guests absorb the increase. The ceiling is reputation, not demand.";
+  }else if(elasticity<1.4){
+    v= p<14000 ? "A balanced hotel. Modest room to raise rates before guests start drifting to cheaper options."
+               : "You're near the tipping point. Each further rupee now costs you guests almost as fast as it earns you margin.";
+  }else{
+    v= p<8000 ? "Right where an elastic hotel should live. Cheap fills the rooms; revenue is healthiest near the bottom."
+              : "Watch the cliff. Push the price here and guests flee to the room next door faster than your margin can grow. Revenue is falling.";
+  }
+  verdict.textContent=v;
+}
+document.querySelectorAll('#simSeg button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('#simSeg button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); elasticity=+b.dataset.e; updateSim();
+  };
+});
+slider.addEventListener('input',updateSim);
+updateSim();
+
+// ---- progress bar ----
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const sc=(h.scrollTop)/(h.scrollHeight-h.clientHeight)*100;
+  document.getElementById('progress').style.width=sc+'%';
+},{passive:true});
+</script>
+</body>
+</html>

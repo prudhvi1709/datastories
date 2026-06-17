@@ -1,0 +1,43 @@
+hotel_name,property_type,star_rating,check_in_date,season,listed_price_inr,mrp_inr,discount_pct,guest_rating,reviews,elasticity_band
+Hyatt Gachibowli,Hotel,5,2026-06-18,Summer,17000,,0,4.1,1025,Inelastic
+Hyatt Gachibowli,Hotel,5,2026-07-15,Monsoon,25000,,0,4.1,1025,Inelastic
+Hyatt Gachibowli,Hotel,5,2026-08-14,Independence Day,26000,,0,4.1,1025,Inelastic
+Hyatt Gachibowli,Hotel,5,2026-09-15,Late Monsoon,38260,,0,4.1,1025,Inelastic
+Hyatt Gachibowli,Hotel,5,2026-12-24,Christmas,28350,,0,4.1,1025,Inelastic
+Hyatt Gachibowli,Hotel,5,2027-01-14,Pongal,26000,,0,4.1,1025,Inelastic
+Fairfield by Marriott,Hotel,4,2026-06-18,Summer,13249,,0,4.1,6528,Inelastic
+Fairfield by Marriott,Hotel,4,2026-07-15,Monsoon,13749,,0,4.1,6528,Inelastic
+Fairfield by Marriott,Hotel,4,2026-08-14,Independence Day,9599,,0,4.1,6528,Inelastic
+Fairfield by Marriott,Hotel,4,2026-09-15,Late Monsoon,14749,,0,4.1,6528,Inelastic
+Fairfield by Marriott,Hotel,4,2026-12-24,Christmas,19249,,0,4.1,6528,Inelastic
+Fairfield by Marriott,Hotel,4,2027-01-14,Pongal,17749,,0,4.1,6528,Inelastic
+Deccan Serai Grande,Hotel,,2026-06-18,Summer,6686,8999,26,4.4,1381,Testing sensitivity
+Deccan Serai Grande,Hotel,,2026-09-15,Late Monsoon,15791,21000,25,4.4,1381,Testing sensitivity
+Quad Hotels,Hotel,4,2026-06-18,Summer,5868,9300,37,4.5,124,Testing sensitivity
+Quad Hotels,Hotel,4,2026-07-15,Monsoon,4720,7500,37,4.5,124,Testing sensitivity
+Quad Hotels,Hotel,4,2026-08-14,Independence Day,4720,7500,37,4.5,124,Testing sensitivity
+Ellaa Hotel,Hotel,,2026-06-18,Summer,5129,7650,33,3.7,5825,Testing sensitivity
+Ellaa Hotel,Hotel,,2026-07-15,Monsoon,5364,8000,33,3.7,5825,Testing sensitivity
+Ellaa Hotel,Hotel,,2026-08-14,Independence Day,5699,8499,33,3.7,5825,Testing sensitivity
+Treebo De Alphabet,Hotel,,2026-10-14,Navratri,5492,15210,64,3.8,85,Elastic
+Treebo Pride Inn Botanica,Hotel,,2026-12-24,Christmas,5776,15010,62,3.7,283,Elastic
+Treebo Pride Inn Botanica,Hotel,,2027-01-14,Pongal,5776,15010,62,3.7,283,Elastic
+Treebo Kruthika Residency,Hotel,,2026-12-24,Christmas,7098,18447,62,3.8,262,Elastic
+Treebo Kruthika Residency,Hotel,,2027-01-14,Pongal,7098,18447,62,3.8,262,Elastic
+Housr 43 Gachibowli,Serviced Apartment,,2026-08-14,Independence Day,4367,8998,51,3.9,46,Elastic
+Housr 43 Gachibowli,Serviced Apartment,,2026-09-15,Late Monsoon,4367,8998,51,3.9,46,Elastic
+Housr 43 Gachibowli,Serviced Apartment,,2026-12-24,Christmas,4367,8998,51,3.9,46,Elastic
+Housr 43 Gachibowli,Serviced Apartment,,2027-01-14,Pongal,5849,8998,35,3.9,46,Elastic
+Olive Service Apartments,Serviced Apartment,,2026-06-18,Summer,4061,7565,46,4.4,134,Elastic
+Olive Service Apartments,Serviced Apartment,,2026-09-15,Late Monsoon,4061,7565,46,4.4,134,Elastic
+Olive Luxury 3BHK Service Apartment,Serviced Apartment,,2026-06-18,Summer,8066,20828,61,,,Elastic
+BluO 1BHK Suite Gachibowli,Homestay,,2026-06-18,Summer,3517,7565,54,4.6,28,Elastic
+Casa Hotels and Suites,Hotel,,2026-06-18,Summer,4240,8599,51,4.1,659,Elastic
+Deccan Staycations 3-Bed,Homestay,,2026-06-18,Summer,3616,4499,20,4.6,9,Testing sensitivity
+Deccan Staycations 3-Bed,Homestay,,2026-07-15,Monsoon,3730,4499,17,4.6,9,Testing sensitivity
+Hotel Deccan Serai Grande,Hotel,,2026-06-18,Summer,6686,8999,26,4.4,1381,Testing sensitivity
+Sheraton Hyderabad,Hotel,5,2026-10-14,Navratri,31000,,0,4.4,1053,Inelastic
+Marriott Executive Apartments,Serviced Apartment,,2026-10-14,Navratri,36500,,0,4.5,779,Inelastic
+Clarion Hotel Hyderabad,Hotel,,2026-10-14,Navratri,6112,6999,13,4.0,534,Testing sensitivity
+32 Urban by Akoya Hotels,Hotel,,2026-10-14,Navratri,3119,4900,36,4.1,580,Testing sensitivity
+Bloom Hotel Gachibowli,Hotel,,2026-10-14,Navratri,4000,,,,,Elastic
